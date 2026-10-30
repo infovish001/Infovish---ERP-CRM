@@ -1,0 +1,11 @@
+.git
+.runtime
+.env
+References
+docs
+backend/.env
+backend/node_modules
+backend/vendor
+backend/public/build
+backend/storage/logs/*
+backend/bootstrap/cache/*.php

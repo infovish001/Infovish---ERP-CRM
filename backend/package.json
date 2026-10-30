@@ -1,0 +1,39 @@
+{
+  "name": "@infovish/erp-web",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "node node_modules/vite/bin/vite.js",
+    "build": "node node_modules/vite/bin/vite.js build",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "lint": "node node_modules/eslint/bin/eslint.js resources/js",
+    "test": "node node_modules/vitest/vitest.mjs run"
+  },
+  "dependencies": {
+    "@inertiajs/react": "^3.9.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^13.1.0",
+    "@eslint/js": "^10.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "latest",
+    "eslint": "^10.0.0",
+    "globals": "latest",
+    "jsdom": "latest",
+    "laravel-vite-plugin": "^3.2.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "latest",
+    "vite": "^8.3.5",
+    "vitest": "latest"
+  }
+}

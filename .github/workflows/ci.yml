@@ -1,0 +1,90 @@
+name: Foundation verification
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_DB: infovish_test
+          POSTGRES_USER: infovish_ci
+          POSTGRES_PASSWORD: ephemeral-ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U infovish_ci -d infovish_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+      redis:
+        image: redis:8.10-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      DB_DATABASE: infovish_test
+      DB_USERNAME: infovish_ci
+      DB_PASSWORD: ephemeral-ci-only
+      REDIS_CLIENT: predis
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: '6379'
+      REDIS_PREFIX: infovish_ci_
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      RUN_INTEGRATION: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo_pgsql, bcmath, mbstring, fileinfo, zip
+          coverage: none
+          tools: composer:v2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer validate --strict
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php vendor/bin/pint --test
+      - run: php vendor/bin/phpstan analyse --memory-limit=512M
+      - run: php tools/check-boundaries.php
+      - run: php artisan migrate --force
+      - run: php artisan test
+      - run: npm ci
+      - run: node tools/check-api.mjs
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: composer audit --locked
+      - run: npm audit --audit-level=high
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan repository history with Gitleaks CLI
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.30.1 git /repo --redact --exit-code 1

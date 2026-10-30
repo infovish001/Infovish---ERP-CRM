@@ -1,0 +1,23 @@
+# Docker Desktop stale socket recovery
+
+On 2026-10-30, Docker Desktop 4.85.0 failed before the Linux engine became available. Its host log reported inaccessible AF_UNIX endpoints, first `Docker/run/dockerInference`, then `docker-secrets-engine/engine.sock`, under the current user's LocalAppData directory. Both enumerated as zero-byte reparse points. Docker's own deletion attempt failed with Windows error text “The file cannot be accessed by the system.”
+
+The failure matches reports in Docker's [desktop issue tracker](https://github.com/docker/desktop-feedback/issues/625). Those reports describe similar symptoms; they do not establish the cause on this machine.
+
+## Repair performed
+
+Inspected the recent `com.docker.backend.exe.log` and verified the exact runtime paths. Confirmed the secrets runtime directory contained only `engine.sock`. Stopped the crashed Docker Desktop/backend processes from the official Docker installation, renamed the runtime directories as backups, then restarted the installed Docker Desktop application. No factory reset, volume removal, WSL reset, credential change or settings edit was performed.
+
+Preserved backups:
+
+- `C:\Users\techv\AppData\Local\Docker\run-stale-20261030-085056`
+- `C:\Users\techv\AppData\Local\Docker\run-stale-20261030-085155`
+- `C:\Users\techv\AppData\Local\docker-secrets-engine-stale-20261030-085155`
+
+The first restart exposed the second stale endpoint. The second restart progressed through engine startup and Compose began pulling project service images. Final engine and integration results belong in the M01 report.
+
+## If this recurs
+
+Inspect the current host logs before attempting repair. Verify that affected directories contain runtime endpoints only. Preserve them by renaming with Docker stopped; never remove application data, WSL disks or Docker volumes as a general workaround. Host access is required because these paths are outside the repository. A future Docker or Windows update may change the behavior, so diagnose the current error rather than applying this procedure blindly.
+
+Docker CLI status calls can hang while the backend is crashed. Use bounded diagnostic processes and terminate only the specific diagnostic child on timeout. Do not infer service availability from a running Desktop process alone.

@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: Infovish foundation probes
+  version: 0.1.0
+  description: Process liveness and platform dependency readiness only. No business API is implemented.
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        '200':
+          description: Laravel request processing is alive; independent of external services.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { const: ok }
+  /ready:
+    get:
+      operationId: readiness
+      responses:
+        '200':
+          description: Both platform dependencies are reachable; does not verify worker or migration state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Readiness' }
+        '503':
+          description: At least one dependency is unavailable; connection details are omitted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Readiness' }
+components:
+  schemas:
+    Readiness:
+      type: object
+      required: [status, checks]
+      properties:
+        status: { enum: [ready, unavailable] }
+        checks:
+          type: object
+          required: [database, redis]
+          properties:
+            database: { enum: [ready, unavailable] }
+            redis: { enum: [ready, unavailable] }
