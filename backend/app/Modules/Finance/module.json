@@ -1,0 +1,1 @@
+{"name":"Finance","version":"1.0.0","framework_major":1,"min_schema":5,"dependencies":{"Parties":"^1.0","Sales":"^1.0"},"contracts":["Ledger","BalanceData"],"migrations":"Infrastructure/Migrations"}

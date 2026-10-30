@@ -17,7 +17,7 @@ Baseline: PRD v1.1, SAD v1.0 and master request. Range identifiers are preserved
 | MOD/ORG baseline, Parties/Catalog, DEP-001 through DEP-005/007, NFR-002/003/009/013 | M03 | ADR-020, module manifests/activation/entitlements, public DTOs, contacts/products, shared transactions and real integration tests | Implemented baseline; final verification and deferred features in M03_REPORT |
 | CRM baseline, BR-CRM/AC-CRM lifecycle/conversion, NFR-002/003/007/009/013 | M04 | ADR-021, assigned CRM services, public-contract conversion, immutable history, exact forecasts, integration/UI tests | Implemented baseline; verification and advanced CRM exclusions in M04_REPORT |
 | SAL quotation/order baseline, E2E-004/005, NFR-001/002/003/006/007/009/013, DEP-001/002/004/005/007 | M05 | ADR-022, Sales snapshots/pricing/profile/PDF/conversion and integration/UI tests | Implemented baseline; evidence in M05_REPORT; R1 gates remain open, no release claim |
-| FIN range, BR-FIN, NFR-009 | M06 | Decimal/transaction policy in architecture | Deferred; no financial calculations |
+| FIN/BR-FIN/AC-FIN grouped baseline, E2E-006/007/010/019, NFR consistency/precision/isolation/audit | M06 | M06_SPEC, ADR-023, explicit setup/immutable ledger/subledgers/reconciliation/reports, sourced tax review and integration/UI checks | Implemented scoped baseline; actual verification in M06_REPORT; statutory statements/corrections, FX/closing and production certification deferred |
 | INV/PRC ranges, BR-INV | M07 | Ownership and event boundaries | Deferred |
 | HRM/PRJ/HLP/POR/DMS ranges | M08 | Module ownership table | Deferred |
 | COM/AUT/MKT ranges, BR-COM | M09 | Official provider trust boundary | Deferred |

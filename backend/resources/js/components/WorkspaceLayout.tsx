@@ -7,12 +7,14 @@ export default function WorkspaceLayout({
     user,
     children,
     section = 'master-data',
+    financeVisible = false,
 }: {
     title: string;
     tenant: string;
     user: string;
     children: ReactNode;
-    section?: 'master-data' | 'crm' | 'sales';
+    section?: 'master-data' | 'crm' | 'sales' | 'finance';
+    financeVisible?: boolean;
 }) {
     const [dark, setDark] = useState(false);
     const [menu, setMenu] = useState(false);
@@ -60,6 +62,15 @@ export default function WorkspaceLayout({
                     >
                         Sales
                     </Link>
+                    {financeVisible && (
+                        <Link
+                            href="/workspace/finance"
+                            className={section === 'finance' ? 'nav-active' : ''}
+                            aria-current={section === 'finance' ? 'page' : undefined}
+                        >
+                            Accounting &amp; finance
+                        </Link>
+                    )}
                     <Link href="/account/security">Account security</Link>
                 </nav>
                 <div className="sidebar-note">

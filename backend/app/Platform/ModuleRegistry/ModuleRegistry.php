@@ -32,7 +32,7 @@ final class ModuleRegistry
                 }
             }
             $data['min_schema'] ??= 2;
-            if (! in_array($data['min_schema'], [2, 3, 4], true)) {
+            if (! in_array($data['min_schema'], [2, 3, 4, 5], true)) {
                 throw new InvalidArgumentException('Unsupported module schema requirement.');
             }
             $manifests[$name] = $data;

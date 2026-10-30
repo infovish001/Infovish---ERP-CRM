@@ -3,6 +3,7 @@
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\WorkspaceController;
 use App\Modules\CRM\Presentation\CrmController;
+use App\Modules\Finance\Presentation\FinanceController;
 use App\Modules\Sales\Presentation\SalesController;
 use App\Shared\Health\Readiness;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,34 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/security', [WorkspaceController::class, 'security']);
     Route::put('/account/password', [WorkspaceController::class, 'password']);
     Route::middleware('privileged-mfa')->group(function () {
+        Route::get('/workspace/finance', [FinanceController::class, 'page']);
+        Route::prefix('api/v1/finance')->middleware('throttle:120,1')->controller(FinanceController::class)->group(function () {
+            Route::get('setup', 'setup');
+            Route::post('accounts', 'account');
+            Route::put('accounts/{id}', 'account')->whereUuid('id');
+            Route::post('periods', 'period');
+            Route::put('periods/{id}/lock', 'lock')->whereUuid('id');
+            Route::put('settings', 'configure');
+            Route::get('reports', 'reports');
+            Route::get('ledger', 'ledger');
+            Route::get('bank-lines', 'bankLines');
+            Route::post('drafts', 'draft');
+            Route::put('drafts/{id}', 'draft')->whereUuid('id');
+            Route::post('drafts/{id}/post', 'postDraft')->whereUuid('id');
+            Route::post('journals/{id}/reverse', 'reverse')->whereUuid('id');
+            Route::post('documents/{type}', 'document')->whereIn('type', ['invoice', 'bill']);
+            Route::put('documents/{type}/{id}', 'document')->whereIn('type', ['invoice', 'bill'])->whereUuid('id');
+            Route::post('documents/{id}/post', 'postDocument')->whereUuid('id');
+            Route::post('documents/{id}/cancel', 'cancel')->whereUuid('id');
+            Route::post('documents/{id}/print', 'print')->whereUuid('id');
+            Route::post('payments', 'payment');
+            Route::post('payments/{id}/void', 'void')->whereUuid('id');
+            Route::post('statements', 'statement');
+            Route::put('statements/{id}', 'statement')->whereUuid('id');
+            Route::post('statements/{id}/finalize', 'finalize')->whereUuid('id');
+            Route::get('{kind}', 'index')->whereIn('kind', ['drafts', 'journals', 'invoices', 'bills', 'payments', 'statements']);
+            Route::get('{kind}/{id}', 'detail')->whereIn('kind', ['drafts', 'journals', 'invoices', 'bills', 'payments', 'statements'])->whereUuid('id');
+        });
         Route::get('/workspace/sales', [SalesController::class, 'page']);
         Route::prefix('api/v1/sales')->middleware('throttle:120,1')->controller(SalesController::class)->group(function () {
             Route::get('setup', 'setup');
@@ -65,7 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/workspace/master-data', [MasterDataController::class, 'page']);
         Route::prefix('api/v1')->middleware('throttle:120,1')->controller(MasterDataController::class)->group(function () {
             Route::get('modules', 'modules');
-            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog', 'CRM', 'Sales']);
+            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog', 'CRM', 'Sales', 'Finance']);
             Route::get('contacts', 'contacts');
             Route::post('contacts', 'saveContact');
             Route::put('contacts/{id}', 'saveContact')->whereUuid('id');

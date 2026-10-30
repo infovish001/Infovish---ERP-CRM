@@ -7,6 +7,7 @@ use App\Platform\Organization\OrganizationService;
 use App\Platform\Tenancy\RuntimeRole;
 use App\Platform\Tenancy\TenantExecution;
 use App\Platform\Tenancy\TenantProvisioner;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -94,6 +95,17 @@ abstract class TenantIntegrationTest extends TestCase
             User::whereIn('id', $this->users)->delete();
         }
         parent::tearDown();
+    }
+
+    protected function dropFinanceForUpgrade(Connection $db): void
+    {
+        foreach (['finance_prints', 'finance_matches', 'finance_statements', 'finance_payment_voids', 'finance_payments', 'finance_documents', 'finance_drafts', 'finance_lines', 'finance_journals', 'finance_settings', 'finance_periods', 'finance_accounts'] as $table) {
+            $db->getSchemaBuilder()->drop($table);
+        }
+        foreach (['finance_balance_guard', 'finance_freeze_guard', 'finance_period_guard', 'finance_match_guard'] as $function) {
+            $db->statement('DROP FUNCTION '.$function.'()');
+        }
+        $db->table('migrations')->where('migration', '2026_10_31_100005_create_finance')->delete();
     }
 
     protected function requestAs(User $user, string $tenant): static

@@ -317,6 +317,7 @@ class M05SalesTest extends TenantIntegrationTest
         $config['database'] = $row->database_name;
         config(['database.connections.sales_upgrade' => $config]);
         $db = DB::connection('sales_upgrade');
+        $this->dropFinanceForUpgrade($db);
         $db->statement('ALTER TABLE sales_quotes DROP CONSTRAINT sales_quotes_order_fk');
         foreach (['sales_history', 'sales_orders', 'sales_quotes', 'sales_tax_profiles'] as $table) {
             $db->getSchemaBuilder()->drop($table);

@@ -25,7 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['code', 'recovery_code', 'two_factor_secret', 'database_password']);
         $exceptions->report(function (QueryException $exception): void {
-            // Query bindings and database detail strings can contain CRM contact fields or notes.
+            // Tenant SQL, bindings and database details can contain private business fields.
             Log::error('Database operation failed.', ['connection' => $exception->getConnectionName(), 'sqlstate' => $exception->errorInfo[0] ?? null]);
+        })->stop();
+        $exceptions->report(function (PDOException $exception): void {
+            Log::error('Database transaction failed.', ['sqlstate' => $exception->errorInfo[0] ?? null]);
         })->stop();
     })->create();

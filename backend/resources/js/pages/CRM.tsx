@@ -257,7 +257,13 @@ export default function CRM({
     const shownPipelines = setup.pipelines.filter((p) => !pipeline || p.id === pipeline);
     const stages = setup.pipelines.find((p) => p.id === pipeline)?.stages ?? [];
     return (
-        <WorkspaceLayout title="CRM" tenant={tenant.name} user={user.name} section="crm">
+        <WorkspaceLayout
+            title="CRM"
+            tenant={tenant.name}
+            user={user.name}
+            section="crm"
+            financeVisible={['owner', 'administrator', 'auditor'].includes(user.role)}
+        >
             <div className="page-heading">
                 <div>
                     <p className="eyebrow">CUSTOMER RELATIONSHIPS</p>

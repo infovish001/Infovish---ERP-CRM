@@ -8,7 +8,7 @@
 | M03 | Module framework, shared services, catalog and contacts | Authorized after M02; verified in M03_REPORT; stop before M04 |
 | M04 | CRM | Authorized after M03; verified in M04_REPORT; stop before M05 |
 | M05 | Sales and first commercial release | Functional baseline verified in M05_REPORT; R1 release gates remain open; stop before M06 |
-| M06 | Finance and accounting | Future |
+| M06 | Finance and accounting | Authorized by continuation after M05; M06_SPEC defines scope, M06_REPORT records verification; stop before M07 |
 | M07 | Inventory and procurement | Future |
 | M08 | HR, projects, helpdesk, portals and documents | Future |
 | M09 | Email, WhatsApp, communications and automation | Future |
@@ -28,3 +28,5 @@ The subsequent continuation after M02 authorizes M03 only. M03_SPEC defines the 
 The user continuation after verified M03 authorizes M04 only. Earlier gates above are historical; the current boundary is before M05.
 
 The continuation after verified M04 authorizes M05 only, including sourced Sri Lankan tax rules at the user's request. Current boundary: stop before M06. Earlier gates are historical.
+
+The continuation after verified M05 authorizes M06 only. M06_SPEC, ADR-023 and M06_TAX_REVIEW define the scoped Finance baseline. The current boundary is before M07; all earlier stop gates are historical. R1 remains unreleased.

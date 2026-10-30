@@ -5,6 +5,7 @@ namespace App\Modules\Sales\Application;
 use App\Modules\Catalog\Domain\Contracts\Products;
 use App\Modules\CRM\Domain\Contracts\Opportunities;
 use App\Modules\Parties\Domain\Contracts\Contacts;
+use App\Modules\Sales\Domain\Contracts\BillingData;
 use App\Modules\Sales\Domain\Contracts\OrderData;
 use App\Modules\Sales\Domain\Contracts\Orders;
 use App\Shared\Audit\Audit;
@@ -20,6 +21,21 @@ use Illuminate\Support\Str;
 
 final class SalesService implements Orders
 {
+    public function billing(string $companyId, string $id): BillingData
+    {
+        $row = app(SalesAccess::class)->record($companyId, $id, true);
+
+        return new BillingData($this->find($companyId, $id), json_decode($row->snapshot, true, flags: JSON_THROW_ON_ERROR));
+    }
+
+    /** @return list<OrderData> */
+    public function available(string $companyId, string $search = ''): array
+    {
+        Validator::make(['q' => $search], ['q' => 'string|max:100'])->validate();
+
+        return app(SalesAccess::class)->records($companyId, true)->where(fn ($q) => $q->where('number', 'ilike', '%'.$search.'%')->orWhere('title', 'ilike', '%'.$search.'%'))->orderByDesc('confirmed_at')->limit(25)->get()->map(fn ($r) => new OrderData($r->id, $companyId, $r->number, $r->quote_id, $r->customer_id, $r->currency, $r->net, $r->vat, $r->total))->all();
+    }
+
     public function find(string $companyId, string $id): OrderData
     {
         $r = app(SalesAccess::class)->record($companyId, $id, true);

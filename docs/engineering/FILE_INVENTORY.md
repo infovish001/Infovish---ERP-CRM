@@ -1,6 +1,6 @@
 # File inventory
 
-M00 through M05 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
+M00 through M06 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
 
 - `.dockerignore`
 - `.gitattributes`
@@ -43,6 +43,20 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `backend/app/Modules/Catalog/Infrastructure/Migrations/2026_10_30_100002_create_catalog.php`
 - `backend/app/Modules/Catalog/README.md`
 - `backend/app/Modules/Catalog/module.json`
+- `backend/app/Modules/Finance/Application/FinanceAccess.php`
+- `backend/app/Modules/Finance/Application/FinanceDocuments.php`
+- `backend/app/Modules/Finance/Application/FinanceLedger.php`
+- `backend/app/Modules/Finance/Application/FinancePayments.php`
+- `backend/app/Modules/Finance/Application/FinancePrints.php`
+- `backend/app/Modules/Finance/Application/FinanceQueries.php`
+- `backend/app/Modules/Finance/Application/FinanceReconciliation.php`
+- `backend/app/Modules/Finance/Application/FinanceReports.php`
+- `backend/app/Modules/Finance/Application/FinanceSetup.php`
+- `backend/app/Modules/Finance/Domain/Contracts/BalanceData.php`
+- `backend/app/Modules/Finance/Domain/Contracts/Ledger.php`
+- `backend/app/Modules/Finance/Infrastructure/Migrations/2026_10_31_100005_create_finance.php`
+- `backend/app/Modules/Finance/Presentation/FinanceController.php`
+- `backend/app/Modules/Finance/module.json`
 - `backend/app/Modules/Parties/Application/ContactService.php`
 - `backend/app/Modules/Parties/Domain/Contracts/ContactData.php`
 - `backend/app/Modules/Parties/Domain/Contracts/Contacts.php`
@@ -55,6 +69,7 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `backend/app/Modules/Sales/Application/SalesAccess.php`
 - `backend/app/Modules/Sales/Application/SalesService.php`
 - `backend/app/Modules/Sales/Application/TaxProfile.php`
+- `backend/app/Modules/Sales/Domain/Contracts/BillingData.php`
 - `backend/app/Modules/Sales/Domain/Contracts/OrderData.php`
 - `backend/app/Modules/Sales/Domain/Contracts/Orders.php`
 - `backend/app/Modules/Sales/Infrastructure/Migrations/2026_10_30_100004_create_sales.php`
@@ -132,6 +147,13 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `backend/resources/js/features/crm/Forms.tsx`
 - `backend/resources/js/features/crm/RecordDetail.tsx`
 - `backend/resources/js/features/crm/types.ts`
+- `backend/resources/js/features/finance/DocumentForm.tsx`
+- `backend/resources/js/features/finance/JournalForm.tsx`
+- `backend/resources/js/features/finance/PaymentForm.tsx`
+- `backend/resources/js/features/finance/ReportsView.tsx`
+- `backend/resources/js/features/finance/SetupForms.tsx`
+- `backend/resources/js/features/finance/StatementForm.tsx`
+- `backend/resources/js/features/finance/types.ts`
 - `backend/resources/js/features/sales/ProfileEditor.tsx`
 - `backend/resources/js/features/sales/QuoteEditor.tsx`
 - `backend/resources/js/features/sales/types.ts`
@@ -140,6 +162,8 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `backend/resources/js/pages/CRM.tsx`
 - `backend/resources/js/pages/Challenge.tsx`
 - `backend/resources/js/pages/ConfirmPassword.tsx`
+- `backend/resources/js/pages/Finance.test.tsx`
+- `backend/resources/js/pages/Finance.tsx`
 - `backend/resources/js/pages/Foundation.test.tsx`
 - `backend/resources/js/pages/Foundation.tsx`
 - `backend/resources/js/pages/Login.tsx`
@@ -151,6 +175,7 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `backend/resources/js/pages/Workspace.test.tsx`
 - `backend/resources/js/pages/Workspace.tsx`
 - `backend/resources/views/app.blade.php`
+- `backend/resources/views/finance/invoice.blade.php`
 - `backend/resources/views/sales/document.blade.php`
 - `backend/routes/console.php`
 - `backend/routes/platform-console.php`
@@ -173,12 +198,14 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `backend/tests/Integration/M03ModulesTest.php`
 - `backend/tests/Integration/M04CrmTest.php`
 - `backend/tests/Integration/M05SalesTest.php`
+- `backend/tests/Integration/M06FinanceTest.php`
 - `backend/tests/Integration/PlatformServicesTest.php`
 - `backend/tests/Support/TenantContextProbeJob.php`
 - `backend/tests/Support/TenantIntegrationTest.php`
 - `backend/tests/Support/confirm-order.php`
 - `backend/tests/Support/convert.php`
 - `backend/tests/Support/mutate.php`
+- `backend/tests/Support/post-finance.php`
 - `backend/tests/TestCase.php`
 - `backend/tests/Unit/ModuleBoundaryTest.php`
 - `backend/tests/Unit/TenantContextTest.php`
@@ -215,6 +242,7 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `docs/architecture/decisions/ADR-020.md`
 - `docs/architecture/decisions/ADR-021.md`
 - `docs/architecture/decisions/ADR-022.md`
+- `docs/architecture/decisions/ADR-023.md`
 - `docs/engineering/FILE_INVENTORY.md`
 - `docs/engineering/LOCAL_SETUP.md`
 - `docs/engineering/M00_REPORT.md`
@@ -231,6 +259,10 @@ M00 through M05 repository files. Original references are preserved. Generated d
 - `docs/engineering/M05_REPORT.md`
 - `docs/engineering/M05_SETUP.md`
 - `docs/engineering/M05_SPEC.md`
+- `docs/engineering/M06_REPORT.md`
+- `docs/engineering/M06_SETUP.md`
+- `docs/engineering/M06_SPEC.md`
+- `docs/engineering/M06_TAX_REVIEW.md`
 - `docs/engineering/MILESTONES.md`
 - `docs/engineering/R1_RELEASE_GATES.md`
 - `docs/engineering/SRI_LANKA_TAX_RULES.md`

@@ -8,7 +8,7 @@ import type { Company, Detail, Document, Page, Setup } from '../features/sales/t
 
 type Props = {
     tenant: { name: string };
-    user: { name: string };
+    user: { name: string; role?: string };
     companies: Company[];
     initialCompany: string | null;
     available: boolean;
@@ -173,7 +173,13 @@ export default function Sales({
     }
     const record = detail?.record;
     return (
-        <WorkspaceLayout title="Sales" tenant={tenant.name} user={user.name} section="sales">
+        <WorkspaceLayout
+            title="Sales"
+            tenant={tenant.name}
+            user={user.name}
+            section="sales"
+            financeVisible={['owner', 'administrator', 'auditor'].includes(user.role ?? '')}
+        >
             <div className="page-heading">
                 <div>
                     <p className="eyebrow">REVENUE OPERATIONS</p>

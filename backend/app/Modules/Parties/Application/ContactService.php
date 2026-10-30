@@ -36,6 +36,17 @@ final class ContactService implements Contacts
     }
 
     /** @return list<ContactData> */
+    public function suppliers(string $companyId, string $search = ''): array
+    {
+        app(ModuleAccess::class)->require('Parties');
+        app(CompanyScope::class)->verify($companyId);
+        Validator::make(['q' => $search], ['q' => 'max:100'])->validate();
+
+        return DB::connection('tenant')->table('parties_contacts')->where('company_id', $companyId)->where('active', true)->where('supplier', true)
+            ->where(fn ($q) => $q->where('name', 'ilike', '%'.$search.'%')->orWhere('email', 'ilike', '%'.$search.'%')->orWhere('number', 'ilike', '%'.$search.'%'))
+            ->orderBy('name')->limit(25)->get()->map(fn ($row) => new ContactData($row->id, $companyId, $row->number, $row->name, $row->customer, $row->supplier))->all();
+    }
+
     public function customers(string $companyId, string $search = ''): array
     {
         app(ModuleAccess::class)->require('Parties');

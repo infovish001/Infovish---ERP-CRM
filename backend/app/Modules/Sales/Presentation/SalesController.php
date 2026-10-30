@@ -24,7 +24,7 @@ final class SalesController
     public function page(Request $request, OrganizationService $organization, TenantContext $context): Response
     {
         return Inertia::render('Sales', ['tenant' => ['name' => $request->attributes->get('tenant')->name],
-            'user' => ['name' => $request->user()->name], 'companies' => $organization->companies()->where('active', true)->orderBy('name')->get(),
+            'user' => ['name' => $request->user()->name, 'role' => $context->role()], 'companies' => $organization->companies()->where('active', true)->orderBy('name')->get(),
             'initialCompany' => $request->session()->get('company_id'), 'available' => app(ModuleAccess::class)->allowed('Sales'), 'canManage' => $context->can('organization.manage')]);
     }
 

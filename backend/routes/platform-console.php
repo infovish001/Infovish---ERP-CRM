@@ -40,7 +40,7 @@ Artisan::command('platform:tenant-state {slug} {status}', function () {
     abort_unless(in_array($this->argument('status'), ['active', 'suspended'], true), 422, 'Choose active or suspended.');
     DB::connection('provisioner')->transaction(function () {
         $tenant = DB::connection('provisioner')->table('tenants')->where('slug', $this->argument('slug'))->lockForUpdate()->first();
-        abort_unless($tenant && in_array($tenant->schema_version, [1, 2, 3, 4], true) && in_array($tenant->status, ['active', 'suspended'], true), 422);
+        abort_unless($tenant && in_array($tenant->schema_version, [1, 2, 3, 4, 5], true) && in_array($tenant->status, ['active', 'suspended'], true), 422);
         if ($tenant->status === $this->argument('status')) {
             return;
         }

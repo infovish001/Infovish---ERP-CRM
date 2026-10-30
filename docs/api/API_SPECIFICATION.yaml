@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: Infovish platform, CRM and Sales API
-  version: 0.5.0
+  title: Infovish platform, CRM, Sales and Finance API
+  version: 0.6.0
   description: >-
     M02 session-authenticated organization APIs run on an exact registered tenant host. Sign in through Fortify,
     complete MFA when enrolled, and provide the host-bound session cookie. Mutations require the page's CSRF token.
@@ -16,6 +16,9 @@ info:
     Sales requires schema 4 and Parties/Catalog/CRM. Privileged MFA mutations; company-granted member/auditor reads.
     Ordinary LK VAT profiles and explicit classifications; commercial PDFs are not tax invoices. No
     fulfillment/accounting effects.
+    M06 Finance requires schema 5 and enabled Parties/Sales dependencies. Company-granted auditors read;
+    owner/administrator MFA users mutate. LKR ledger, invoice/bill posting, recorded payments and manual
+    reconciliation only. No external transfers, statutory corrections or certified financial statements.
 paths:
   /login:
     post:
@@ -2514,6 +2517,1040 @@ paths:
           description: Validation or unsupported tax/currency/active reference rule failed; field errors.
         '429':
           description: 120 requests per actor per minute.
+  /api/v1/finance/setup:
+    get:
+      operationId: financeSetup
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSetup'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+  /api/v1/finance/accounts:
+    post:
+      operationId: financeAccount
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200': &ref_0
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '201': *ref_0
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceAccountInput'
+  /api/v1/finance/periods:
+    post:
+      operationId: financePeriod
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200': &ref_1
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '201': *ref_1
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinancePeriodInput'
+  /api/v1/finance/drafts:
+    post:
+      operationId: financeDraft
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200': &ref_2
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '201': *ref_2
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceDraftInput'
+  /api/v1/finance/payments:
+    post:
+      operationId: financePayment
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200': &ref_3
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '201': *ref_3
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinancePaymentInput'
+  /api/v1/finance/statements:
+    post:
+      operationId: financeStatement
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200': &ref_4
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '201': *ref_4
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceStatementInput'
+  /api/v1/finance/accounts/{id}:
+    put:
+      operationId: financeAccountUpdate
+      security:
+        - session: []
+      description: >-
+        Observed revision required (settings 0 initially); account identity stable, posted mappings fixed. Only
+        owner may reopen periods.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceAccountInput'
+  /api/v1/finance/drafts/{id}:
+    put:
+      operationId: financeDraftUpdate
+      security:
+        - session: []
+      description: >-
+        Observed revision required (settings 0 initially); account identity stable, posted mappings fixed. Only
+        owner may reopen periods.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceDraftInput'
+  /api/v1/finance/statements/{id}:
+    put:
+      operationId: financeStatementUpdate
+      security:
+        - session: []
+      description: >-
+        Observed revision required (settings 0 initially); account identity stable, posted mappings fixed. Only
+        owner may reopen periods.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceStatementInput'
+  /api/v1/finance/periods/{id}/lock:
+    put:
+      operationId: financeLockUpdate
+      security:
+        - session: []
+      description: >-
+        Observed revision required (settings 0 initially); account identity stable, posted mappings fixed. Only
+        owner may reopen periods.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceLockInput'
+  /api/v1/finance/settings:
+    put:
+      operationId: financeConfigureUpdate
+      security:
+        - session: []
+      description: >-
+        Observed revision required (settings 0 initially); account identity stable, posted mappings fixed. Only
+        owner may reopen periods.
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceSettingsInput'
+  /api/v1/finance/documents/{type}:
+    post:
+      operationId: financeDocument
+      security:
+        - session: []
+      description: >-
+        Input follows invoice or bill path type. Full immutable Sales order only; no partial billing or
+        repricing. Tax invoice requires actual registered seller/purchaser, written-request evidence and
+        supported 28-day supply window. Bills record declared eligible input VAT; no automatic tax credit
+        entitlement.
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - invoice
+              - bill
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200': &ref_5
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '201': *ref_5
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/FinanceInvoiceInput'
+                - $ref: '#/components/schemas/FinanceBillInput'
+  /api/v1/finance/documents/{type}/{id}:
+    put:
+      operationId: financeDocumentUpdate
+      security:
+        - session: []
+      description: >-
+        Input follows invoice or bill path type. Full immutable Sales order only; no partial billing or
+        repricing. Tax invoice requires actual registered seller/purchaser, written-request evidence and
+        supported 28-day supply window. Bills record declared eligible input VAT; no automatic tax credit
+        entitlement.
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - invoice
+              - bill
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/FinanceInvoiceInput'
+                - $ref: '#/components/schemas/FinanceBillInput'
+  /api/v1/finance/drafts/{id}/post:
+    post:
+      operationId: financePostDraft
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceRevisionInput'
+  /api/v1/finance/journals/{id}/reverse:
+    post:
+      operationId: financeReverse
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceReasonInput'
+  /api/v1/finance/documents/{id}/post:
+    post:
+      operationId: financePostDocument
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceRevisionInput'
+  /api/v1/finance/documents/{id}/cancel:
+    post:
+      operationId: financeCancel
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceCancelInput'
+  /api/v1/finance/payments/{id}/void:
+    post:
+      operationId: financeVoid
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceReasonInput'
+  /api/v1/finance/statements/{id}/finalize:
+    post:
+      operationId: financeFinalize
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceRevisionInput'
+  /api/v1/finance/documents/{id}/print:
+    post:
+      operationId: financePrint
+      security:
+        - session: []
+      description: >-
+        One original, supplier duplicate or reasoned COPY ONLY. Copy needs an existing original. No sending.
+        Stable retries return retained byte-identical PDF; SHA-256 kept in immutable print history.
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Retained exact PDF bytes; issuance audited atomically.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinancePrintInput'
+  /api/v1/finance/reports:
+    get:
+      operationId: financeReports
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - &ref_7
+          name: from
+          in: query
+          required: true
+          schema: &ref_6
+            type: string
+            format: date
+        - &ref_8
+          name: to
+          in: query
+          required: true
+          schema: *ref_6
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceReports'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+  /api/v1/finance/ledger:
+    get:
+      operationId: financeLedger
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: account_id
+          in: query
+          required: true
+          schema: &ref_9
+            type: string
+            format: uuid
+        - *ref_7
+        - *ref_8
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancePage'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+  /api/v1/finance/bank-lines:
+    get:
+      operationId: financeBankLines
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: account_id
+          in: query
+          required: true
+          schema: *ref_9
+        - name: as_of
+          in: query
+          required: true
+          schema: *ref_6
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - limit
+                properties:
+                  data:
+                    type: array
+                    maxItems: 500
+                    items:
+                      type: object
+                  limit:
+                    const: 500
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+  /api/v1/finance/{kind}:
+    get:
+      operationId: financeList
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - drafts
+              - journals
+              - invoices
+              - bills
+              - payments
+              - statements
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancePage'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
+  /api/v1/finance/{kind}/{id}:
+    get:
+      operationId: financeDetail
+      security:
+        - session: []
+      description: >-
+        Finance schema 5. Owner/administrator MFA mutations; company-granted auditor reads. Exact decimal
+        strings. No external transfer.
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - drafts
+              - journals
+              - invoices
+              - bills
+              - payments
+              - statements
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Company'
+      responses:
+        '200':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceDetail'
+        '401':
+          description: Tenant-bound login required.
+        '403':
+          description: Role, MFA, company or module entitlement denied.
+        '404':
+          description: Record unavailable in this scope.
+        '409':
+          description: Revision, lifecycle, balance, period, source, bank window or idempotency conflict.
+        '419':
+          description: CSRF validation failed.
+        '422':
+          description: Validation, mapping, classification, tax evidence or supported currency rule failed.
+        '429':
+          description: 120 requests per actor per minute exceeded.
 components:
   securitySchemes:
     session:
@@ -3506,3 +4543,444 @@ components:
         occurred_at:
           type: string
           format: date-time
+
+    FinanceAccountInput:
+      type: object
+      required:
+        - company_id
+        - code
+        - name
+        - type
+        - bank
+        - active
+      properties:
+        company_id: &ref_1
+          type: string
+          format: uuid
+        code:
+          type: string
+          pattern: ^[A-Z0-9][A-Z0-9_-]{0,19}$
+        name:
+          type: string
+          maxLength: 160
+        type:
+          enum:
+            - asset
+            - liability
+            - equity
+            - income
+            - expense
+        bank: &ref_0
+          type: boolean
+        active: *ref_0
+        revision: &ref_3
+          type: integer
+          minimum: 1
+    FinancePeriodInput:
+      type: object
+      required:
+        - company_id
+        - name
+        - starts_on
+        - ends_on
+      properties:
+        company_id: *ref_1
+        name:
+          type: string
+          maxLength: 100
+        starts_on: &ref_2
+          type: string
+          format: date
+        ends_on: *ref_2
+    FinanceLockInput:
+      type: object
+      required:
+        - company_id
+        - locked
+        - reason
+        - revision
+      properties:
+        company_id: *ref_1
+        locked: *ref_0
+        reason:
+          type: string
+          maxLength: 500
+        revision: *ref_3
+    FinanceSettingsInput:
+      type: object
+      required:
+        - company_id
+        - revision
+        - receivable
+        - payable
+        - revenue
+        - expense
+        - vat_input
+        - vat_output
+        - seller_name
+        - seller_address
+        - vat_registered
+        - issuer_code
+      properties:
+        company_id: *ref_1
+        revision:
+          type: integer
+          minimum: 0
+        receivable: *ref_1
+        payable: *ref_1
+        revenue: *ref_1
+        expense: *ref_1
+        vat_input: *ref_1
+        vat_output: *ref_1
+        seller_name:
+          type: string
+          maxLength: 160
+        seller_address:
+          type: string
+          maxLength: 500
+        vat_registered: *ref_0
+        tin:
+          type:
+            - string
+            - 'null'
+          pattern: ^[0-9]{9}$
+        vat_registration:
+          type:
+            - string
+            - 'null'
+          maxLength: 30
+        vat_effective_from:
+          type:
+            - string
+            - 'null'
+          format: date
+        issuer_code:
+          type: string
+          pattern: ^(?=[A-Z0-9]*[0-9])[A-Z0-9]{1,15}$
+    FinanceLineInput:
+      type: object
+      required:
+        - account_id
+        - debit
+        - credit
+      properties:
+        account_id: *ref_1
+        debit: &ref_4
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
+        credit: *ref_4
+        description:
+          type:
+            - string
+            - 'null'
+          maxLength: 500
+    FinanceDraftInput:
+      type: object
+      required:
+        - company_id
+        - date
+        - narration
+        - lines
+      properties:
+        company_id: *ref_1
+        date: *ref_2
+        narration:
+          type: string
+          maxLength: 500
+        lines:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/FinanceLineInput'
+        revision: *ref_3
+    FinanceInvoiceInput:
+      type: object
+      required:
+        - company_id
+        - date
+        - due_date
+        - order_id
+        - tax_invoice
+        - buyer_name
+        - buyer_address
+        - supply_date
+      properties:
+        company_id: *ref_1
+        date: *ref_2
+        due_date: *ref_2
+        order_id: *ref_1
+        tax_invoice: *ref_0
+        buyer_name:
+          type: string
+          maxLength: 160
+        buyer_address:
+          type: string
+          maxLength: 500
+        buyer_tin:
+          type:
+            - string
+            - 'null'
+          pattern: ^[0-9]{9}$
+        supply_date: *ref_2
+        request_evidence:
+          type:
+            - string
+            - 'null'
+          maxLength: 500
+        revision: *ref_3
+    FinanceBillInput:
+      type: object
+      required:
+        - company_id
+        - date
+        - due_date
+        - party_id
+        - supplier_reference
+        - description
+        - net
+        - vat
+      properties:
+        company_id: *ref_1
+        date: *ref_2
+        due_date: *ref_2
+        party_id: *ref_1
+        supplier_reference:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        net: *ref_4
+        vat: *ref_4
+        vat_evidence:
+          type:
+            - string
+            - 'null'
+          maxLength: 500
+        revision: *ref_3
+    FinanceRevisionInput:
+      type: object
+      required:
+        - company_id
+        - revision
+      properties:
+        company_id: *ref_1
+        revision: *ref_3
+    FinanceReasonInput:
+      type: object
+      required:
+        - company_id
+        - date
+        - reason
+      properties:
+        company_id: *ref_1
+        date: *ref_2
+        reason:
+          type: string
+          maxLength: 500
+    FinanceCancelInput:
+      type: object
+      required:
+        - company_id
+        - revision
+        - reason
+      properties:
+        company_id: *ref_1
+        revision: *ref_3
+        reason:
+          type: string
+          maxLength: 500
+    FinancePaymentInput:
+      type: object
+      required:
+        - company_id
+        - document_id
+        - bank_account_id
+        - date
+        - reference
+        - amount
+      properties:
+        company_id: *ref_1
+        document_id: *ref_1
+        bank_account_id: *ref_1
+        date: *ref_2
+        reference:
+          type: string
+          maxLength: 100
+        amount: *ref_4
+    FinanceStatementInput:
+      type: object
+      required:
+        - company_id
+        - bank_account_id
+        - starts_on
+        - ends_on
+        - opening
+        - closing
+        - opening_cleared_confirmed
+        - lines
+      properties:
+        company_id: *ref_1
+        bank_account_id: *ref_1
+        starts_on: *ref_2
+        ends_on: *ref_2
+        opening: &ref_5
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
+        closing: *ref_5
+        opening_cleared_confirmed: *ref_0
+        lines:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - date
+              - reference
+              - amount
+            properties:
+              date: *ref_2
+              reference:
+                type: string
+                maxLength: 100
+              amount: *ref_5
+              line_id:
+                type:
+                  - string
+                  - 'null'
+                format: uuid
+        revision: *ref_3
+    FinancePrintInput:
+      type: object
+      required:
+        - company_id
+        - kind
+      properties:
+        company_id: *ref_1
+        kind:
+          enum:
+            - original
+            - duplicate
+            - copy
+        reason:
+          type:
+            - string
+            - 'null'
+          maxLength: 500
+    FinanceSaved:
+      type: object
+      required:
+        - id
+      properties:
+        id: *ref_1
+    FinanceDetail:
+      type: object
+      required:
+        - record
+      properties:
+        record:
+          type: object
+        lines:
+          type: array
+          items:
+            type: object
+        outstanding:
+          type:
+            - string
+            - 'null'
+        payments:
+          type: array
+          items:
+            type: object
+        prints:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - id
+              - kind
+              - created_at
+              - sha256
+            properties:
+              id: *ref_1
+              kind:
+                type: string
+              reason:
+                type:
+                  - string
+                  - 'null'
+              created_at:
+                type: string
+                format: date-time
+              sha256:
+                type: string
+                pattern: ^[a-f0-9]{64}$
+    FinancePage:
+      type: object
+      required:
+        - data
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        data:
+          type: array
+          maxItems: 25
+          items:
+            type: object
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        total:
+          type: integer
+        per_page:
+          const: 25
+    FinanceSetup:
+      type: object
+      required:
+        - accounts
+        - periods
+        - settings
+        - orders
+        - suppliers
+      properties:
+        accounts:
+          type: array
+          items:
+            type: object
+        periods:
+          type: array
+          items:
+            type: object
+        settings:
+          type:
+            - object
+            - 'null'
+        orders:
+          type: array
+          items:
+            type: object
+        suppliers:
+          type: array
+          items:
+            type: object
+    FinanceReports:
+      type: object
+      required:
+        - trial
+        - aging
+      properties:
+        trial:
+          type: object
+          description: >-
+            Posted ledger management trial, income/expense and position; exact string amounts, cumulative unclosed
+            result, no statutory certification.
+        aging:
+          type: object
+          description: >-
+            Invoice/bill current, 1_30, 31_60, 61_90 and 90_plus bucket strings over all open documents; document
+            preview capped at 100.

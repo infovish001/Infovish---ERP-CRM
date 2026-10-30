@@ -313,7 +313,12 @@ export default function MasterData({
     }
     const currentPage = tab === 'events' ? events : result;
     return (
-        <WorkspaceLayout title="Contacts & catalog" tenant={tenant.name} user={user.name}>
+        <WorkspaceLayout
+            title="Contacts & catalog"
+            tenant={tenant.name}
+            user={user.name}
+            financeVisible={['owner', 'administrator', 'auditor'].includes(user.role)}
+        >
             <div className="page-heading">
                 <div>
                     <p className="eyebrow">SHARED BUSINESS RECORDS</p>
@@ -871,22 +876,26 @@ export default function MasterData({
                         <div className="module-row" key={module.name}>
                             <div>
                                 <h3>
-                                    {module.name === 'Sales'
-                                        ? 'Sales'
-                                        : module.name === 'CRM'
-                                          ? 'CRM'
-                                          : module.name === 'Parties'
-                                            ? 'Contacts'
-                                            : 'Products & services'}
+                                    {module.name === 'Finance'
+                                        ? 'Finance'
+                                        : module.name === 'Sales'
+                                          ? 'Sales'
+                                          : module.name === 'CRM'
+                                            ? 'CRM'
+                                            : module.name === 'Parties'
+                                              ? 'Contacts'
+                                              : 'Products & services'}
                                 </h3>
                                 <p>
-                                    {module.name === 'Sales'
-                                        ? 'Quotations, tax profiles and confirmed orders.'
-                                        : module.name === 'CRM'
-                                          ? 'Leads, pipelines, opportunities and activities.'
-                                          : module.name === 'Parties'
-                                            ? 'A shared directory for customer and supplier identities.'
-                                            : 'Product definitions, variants and explicit list prices.'}
+                                    {module.name === 'Finance'
+                                        ? 'Controlled accounting, documents, payments and reconciliation.'
+                                        : module.name === 'Sales'
+                                          ? 'Quotations, tax profiles and confirmed orders.'
+                                          : module.name === 'CRM'
+                                            ? 'Leads, pipelines, opportunities and activities.'
+                                            : module.name === 'Parties'
+                                              ? 'A shared directory for customer and supplier identities.'
+                                              : 'Product definitions, variants and explicit list prices.'}
                                 </p>
                                 <small>
                                     Version {module.installed_version ?? 'not installed'}

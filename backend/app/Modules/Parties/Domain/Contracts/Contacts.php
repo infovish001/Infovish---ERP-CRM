@@ -6,6 +6,9 @@ interface Contacts
 {
     public function find(string $companyId, string $id): ContactData;
 
+    /** @return list<ContactData> */
+    public function suppliers(string $companyId, string $search = ''): array;
+
     public function findByEmail(string $companyId, string $email): ?ContactData;
 
     public function createCustomer(string $companyId, NewCustomer $customer, string $idempotencyKey): ContactData;

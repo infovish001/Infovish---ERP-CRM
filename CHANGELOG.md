@@ -1,5 +1,13 @@
 # Changelog
 
+## M06 Finance baseline (unreleased) — 2026-10-31
+
+- Added schema-5 explicit LKR chart/mappings/periods, balanced append-only journals and reasoned reversals with database integrity guards.
+- Added Sales-contract invoice posting, declared supplier expense bills, retained immutable invoice PDF bytes/hash/issuance history, recorded partial payments/voids and manual bank reconciliation without external transfers.
+- Added posted management trial/ledger/result/position/aging reports, privileged MFA mutations and auditor reads, Finance UI and OpenAPI 0.6.0.
+- Documented sourced Sri Lankan ordinary tax-invoice limits and remaining R1 gates. Verification outcomes are recorded in M06_REPORT; no commercial release or statutory certification is implied.
+- Moved PHPStan temporary cache to writable project storage on D: after a system-drive space incident.
+
 ## Unreleased — 2026-10-30
 
 - Added M04 CRM leads, company pipelines/stages, assigned opportunities/activities, immutable transition history and exact probability-weighted estimates.

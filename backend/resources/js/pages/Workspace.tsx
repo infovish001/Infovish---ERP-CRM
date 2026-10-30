@@ -179,6 +179,7 @@ export default function Workspace({
                     <Link href="/workspace/master-data">Contacts &amp; catalog</Link>
                     <Link href="/workspace/crm">CRM</Link>
                     <Link href="/workspace/sales">Sales</Link>
+                    {['owner','administrator','auditor'].includes(user.role) && <Link href="/workspace/finance">Accounting &amp; finance</Link>}
                     <button
                         className={tab === 'organization' ? 'nav-active' : ''}
                         onClick={() => setTab('organization')}
