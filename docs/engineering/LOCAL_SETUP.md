@@ -22,7 +22,15 @@ php artisan serve --host=127.0.0.1 --port=8000
 
 Open http://localhost:8000. `/health` is process liveness and `/ready` checks real platform PostgreSQL/Redis connections. Dependency checks do not prove migrations or queue processing. No business account or tenant is seeded. `/` returns 404 outside local/testing. Keep development listeners on loopback. Redis is intentionally local and unauthenticated; never reuse this Compose topology or generated development credentials in production.
 
+If port 8000 is already occupied, select a free Docker app port with `$env:APP_PORT = '8011'` before `docker compose up`, then open http://localhost:8011. The setting can also be retained as `APP_PORT=8011` in the ignored root `.env`. The application container continues listening on port 8000 internally.
+
 For the complete Docker development path, prepare `.env` files with the setup script, then `docker compose up -d --build --wait`. Run `docker compose exec app php artisan migrate` and `docker compose exec app php artisan foundation:queue-check`. Run framework/frontend checks within the app or host as appropriate. Container PHP includes Linux worker signal support. This image contains developer dependencies and uses the Laravel development server; it is not a production deployment.
+
+For container backend regression tests, explicitly select the dedicated database and test environment because Compose supplies application environment variables:
+
+```powershell
+docker compose exec -e APP_ENV=testing -e DB_DATABASE=infovish_test -e CACHE_STORE=array -e SESSION_DRIVER=array -e QUEUE_CONNECTION=sync -e RUN_INTEGRATION=1 app php vendor/bin/phpunit
+```
 
 Host verification (from `backend`):
 

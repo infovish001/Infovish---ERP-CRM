@@ -1,6 +1,6 @@
 # Infovish ERP and CRM
 
-Infovish Systems' incremental modular ERP platform. This repository begins with architecture validation (M00) and the engineering foundation (M01). It is not a production ERP release.
+Infovish Systems' incremental modular ERP platform. Architecture validation (M00) and the engineering foundation (M01) are verified. Business modules and production readiness remain future milestones.
 
 Read [M00 report](docs/engineering/M00_REPORT.md), [architecture validation](docs/architecture/ARCHITECTURE_VALIDATION.md), [technology decisions](docs/architecture/TECHNOLOGY_DECISIONS.md) and [milestones](docs/engineering/MILESTONES.md). Original Word references remain in `References/`; complete paragraph/table-text transcriptions are in `docs/requirements/`. Embedded diagrams remain in the originals.
 

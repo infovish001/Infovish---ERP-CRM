@@ -1,8 +1,9 @@
 # File inventory
 
-M00 and M01 files created in the previously references-only workspace. Original Word references were preserved unchanged. Generated dependencies, runtime files, secrets and build output are excluded.
+M00 and M01 repository files. Original Word references were preserved unchanged. Generated dependencies, runtime files, secrets and build output are excluded.
 
 - `.dockerignore`
+- `.gitattributes`
 - `.github/workflows/ci.yml`
 - `.gitignore`
 - `AGENTS.md`
@@ -76,6 +77,7 @@ M00 and M01 files created in the previously references-only workspace. Original 
 - `backend/tools/check-boundaries.php`
 - `backend/tsconfig.json`
 - `backend/vite.config.ts`
+- `backend/vitest.config.ts`
 - `CHANGELOG.md`
 - `compose.yaml`
 - `docs/api/API_SPECIFICATION.yaml`
@@ -106,6 +108,7 @@ M00 and M01 files created in the previously references-only workspace. Original 
 - `docs/engineering/M01_REPORT.md`
 - `docs/engineering/MILESTONES.md`
 - `docs/engineering/TEST_STRATEGY.md`
+- `docs/operations/DOCKER_WINDOWS_RECOVERY.md`
 - `docs/requirements/FEATURE_PARITY_MATRIX.md`
 - `docs/requirements/Infovish_ERP_PRD_v1.1.md`
 - `docs/requirements/Infovish_ERP_SAD_v1.0.md`

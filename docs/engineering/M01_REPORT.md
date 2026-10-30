@@ -1,8 +1,8 @@
 # M01 implementation and verification report
 
-Date: 2026-10-30 (Asia/Colombo). Status: **INCOMPLETE — foundation implemented; service integration and hosted CI gates remain unverified.** M02 has not been started.
+Date: 2026-10-30 (Asia/Colombo). Status: **PASS — M01 engineering foundation verified locally, in Docker and in hosted CI.** M02 has not been started. This status covers the foundation milestone only; it is not a production ERP/security certification.
 
-Continuation authorized on 2026-10-30: recovered Docker's Linux engine (29.6.2) by preserving stale runtime socket directories; see `docs/operations/DOCKER_WINDOWS_RECOVERY.md`. Docker Hub/ECR layer transfers were reset, while Google's Docker Hub cache successfully supplied the unchanged PostgreSQL/Redis versions. Local service/container verification is underway. The user supplied and authorized publication to `https://github.com/infovish001/Infovish---ERP-CRM.git`; the empty repository is being initialized for hosted CI. Verification rows below retain the initial run's results until new checks complete.
+Continuation authorized on 2026-10-30: recovered Docker's Linux engine (29.6.2) by preserving stale runtime socket directories; see `docs/operations/DOCKER_WINDOWS_RECOVERY.md`. Docker Hub/ECR layer transfers were reset, while Google's Docker Hub cache supplied PostgreSQL/Redis images with manifest digests matching the canonical registry. The user supplied and authorized publication to [the GitHub repository](https://github.com/infovish001/Infovish---ERP-CRM); the initial foundation and CI fix are now pushed. Verification rows below include completed continuation checks.
 
 ## Delivered scope
 
@@ -31,7 +31,7 @@ Foundation work supports SAD-AC-001/002/010/013 and PRD NFR-003/004/005/006/007/
 | Composer manifest validation | PASS | `composer validate --strict`: valid |
 | PHP formatting | PASS | `php vendor/bin/pint --test`: passed |
 | PHP static analysis | PASS | `php vendor/bin/phpstan analyse --memory-limit=512M`: no errors at level 6 |
-| Backend unit/feature tests | PASS | `php vendor/bin/phpunit --testsuite Unit,Feature`: 9 tests, 33 assertions |
+| Backend tests including live integration | PASS | `RUN_INTEGRATION=1 php vendor/bin/phpunit`: 11 tests, 42 assertions, no skipped tests |
 | Module boundary check | PASS | `php tools/check-boundaries.php`: 0 business modules; regression test separately proves allowed public, forbidden private and undeclared imports |
 | Configuration safety | PASS | Empty key/password in example; debug off; PostgreSQL selection and bounded dependency timeouts asserted |
 | React/Inertia response | PASS | Feature test asserts component/props and absence of user/tenant data; browser rendered actual assets |
@@ -41,17 +41,19 @@ Foundation work supports SAD-AC-001/002/010/013 and PRD NFR-003/004/005/006/007/
 | Production frontend build | PASS | `npm run build`: Vite 8.3.5; manifest, CSS and JS generated |
 | Live process health | PASS | Host-side `GET /health`: HTTP 200, `{"status":"ok"}` |
 | Live dependency failure handling | PASS | `GET /ready`: HTTP 503, database/Redis unavailable; sanitized response; final timeout check about 4.2 seconds |
+| Live ready response after recovery | PASS | `GET /ready`: HTTP 200, database and Redis both ready |
 | Docker Compose syntax | PASS | `docker compose config --quiet` exited 0 |
-| Docker image build/start | BLOCKED | Installed CLI/Compose, but Linux engine unavailable; CLI start/status did not complete and desktop launch exposed no usable window |
-| Live PostgreSQL connection | BLOCKED | No running project PostgreSQL service; readiness correctly reports unavailable |
-| PostgreSQL migrations/rollback | BLOCKED | Integration test written; not executed against a live database |
-| Live Redis connection | BLOCKED | No running project Redis service |
-| Real queued job processing | BLOCKED | Probe and integration test written; not executed against a live Redis service |
-| Integration suite without opt-in | NOT RUN | 2 tests explicitly skipped, 0 assertions; this is not a service integration pass |
+| Docker engine recovery | PASS | Docker server 29.6.2 responds after preserving stale runtime sockets |
+| Docker image build/start | PASS | Final-source app/worker images built; all four Compose services started; app HTTP probes and running-worker smoke check succeeded |
+| Live PostgreSQL connection | PASS | Compose reports healthy; platform migrations and readiness query succeeded |
+| PostgreSQL migrations/rollback | PASS | Platform migrations applied; dedicated-test database migration/rollback/reapply and transaction rollback assertions passed |
+| Live Redis connection | PASS | Healthy container, readiness and integration probe passed |
+| Real queued job processing | PASS | CLI probe, full integration suite and a separate default-queue job consumed by the running Compose worker all passed |
+| Linux container backend regression | PASS | PHP 8.5.12: 11 tests, 42 assertions, no skipped tests or cache-permission warnings; PHPUnit cache uses writable storage |
 | Composer security audit | PASS | `composer audit --locked`: no vulnerability advisories found at execution |
 | npm security audit | PASS | `npm audit --audit-level=high`: 0 vulnerabilities at execution |
 | Local secret scan | PASS | Official Gitleaks 8.30.1 checksum verified; scanned Git-includable source snapshot with `--redact`: no leaks found; dependencies, .env and .runtime excluded via Git ignore rules |
-| GitHub Actions execution | NOT RUN | CI workflow exists; repository has no configured remote or hosted run |
+| GitHub Actions execution | PASS | [Run 40998441952](https://github.com/infovish001/Infovish---ERP-CRM/actions/runs/40998441952) passed on commit `ebe7038`, including mandatory live integration and secret scanning |
 | OpenAPI contract validation | PASS | `node tools/check-api.mjs`: SwaggerParser validated the OpenAPI 3.1 contract |
 | Production/security/load/restore tests | NOT RUN | Outside M01; no production readiness claim |
 
@@ -61,7 +63,13 @@ Initial Composer install failed because fileinfo was disabled; enabled installed
 
 The sandbox reports PHP files as unreadable to PHPUnit despite application inclusion working. Host-side verification succeeded; no vendor code or test checks were bypassed. A test initially tried mocking a final readiness class; corrected it to mock external facades, then reran successfully.
 
-Docker CLI 29.6.2 and Compose 5.3.1 are installed, but the engine could not be verified or started during this run. The shell showed real dependency failures instead of substituting fixtures. A host-side Laravel preview ran on loopback port 8010 for browser verification; the standard documented port remains 8000.
+Docker CLI/server 29.6.2 and Compose 5.3.1 are now operational after the targeted runtime-socket repair. The shell first showed genuine dependency failures and now returns ready for both services. A host-side Laravel preview ran on loopback port 8010 for browser verification; the standard documented port remains 8000.
+
+Docker could not bind host port 8000, so Compose now supports `APP_PORT` and this machine uses loopback port 8011. The local port and verified mirror selections are retained only in the ignored root `.env`. Container liveness and readiness both returned HTTP 200 at port 8011. The app/worker run as the image's non-root user. Container tests initially reported an unwritable default PHPUnit cache; the cache now lives in `storage/framework/testing/phpunit`, which is writable without granting write access to application code.
+
+Hosted CI exposed a further configuration issue: Vitest loaded Laravel's development-server plugin, whose CI guard correctly rejected HMR startup. Added a separate React-only `vitest.config.ts`, retained Laravel's plugin in the application Vite configuration, and verified frontend tests/typecheck/build with `CI=true`. No guard bypass was introduced. The CI fix is commit `ebe7038`.
+
+Verified canonical service manifest digests: PostgreSQL `sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b`; Redis `sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537`. An initial comparison of Docker 29's manifest ID to a config-blob digest used different identity types; corrected the check to compare the full canonical manifest digest, which matches for both images.
 
 ## Security and deferred features
 
@@ -71,6 +79,8 @@ No tenant provisioning, IAM, organization workflows, CRM, Sales, Finance, Invent
 
 ## Remaining work and recommended next action
 
-Restore a working Docker Desktop Linux engine, run the documented Compose build and service startup, then execute migrations, the queue probe and `RUN_INTEGRATION=1` integration tests against `infovish_test`. Fix any real container or integration failures before passing M01. Configure the approved GitHub remote and run the workflow; record its result. Until these gates pass, M01 remains incomplete. Stop before M02 and review the foundation.
+All M01 acceptance checks have passed: local/CI bootstrap, React/Inertia rendering, PostgreSQL connectivity and migrations, Redis and real queue processing, health/readiness, backend/frontend checks, Docker build/start and security scans. Local Docker and host regressions each passed 11 tests with 42 assertions; frontend passed 2 tests. The final documentation/configuration commit also triggers the same hosted workflow; inspect its latest run before starting later work.
 
-Files are listed in `docs/engineering/FILE_INVENTORY.md`; source files and all changes remain uncommitted for review.
+Review the foundation and explicitly authorize M02 before implementing tenant provisioning, identity, organization or audit workflows. Keep the managed-production, recovery, localization and security gates deferred as documented; none is represented as verified by this foundation milestone.
+
+Files are listed in `docs/engineering/FILE_INVENTORY.md`. The foundation and completion evidence are published in [GitHub](https://github.com/infovish001/Infovish---ERP-CRM). The Docker preview is available locally at http://localhost:8011; the earlier host preview remains on port 8010.

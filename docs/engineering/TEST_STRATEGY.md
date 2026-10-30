@@ -6,6 +6,8 @@ Integration tests are opt-in locally with `RUN_INTEGRATION=1`, mandatory in CI, 
 
 Frontend checks use strict TypeScript, ESLint, a production asset build and interaction tests for dependency failure display, theme and responsive navigation controls. Browser inspection supplements these tests; WCAG 2.2 AA, keyboard/assistive-technology coverage and full browser compatibility remain later release gates.
 
+Vitest uses `backend/vitest.config.ts` with the React transform only. The application build uses `backend/vite.config.ts`, including Laravel's asset/HMR integration. Tests must also pass with `CI=true`; do not disable Laravel's environment guard to make a test process behave like a development server.
+
 Static boundary checks validate future module manifests and cross-module import seams. They cannot prove dynamic SQL or tenant isolation. M02 adds actual isolation/authorization tests; business milestones add invariant, concurrency and idempotency tests. No fake feature or test count should substitute for these gates.
 
 GitHub Actions uses ephemeral PostgreSQL/Redis, mandatory integration tests, Composer/npm audits and Gitleaks CLI history scanning. A local command pass does not imply a hosted CI run passed. Record every required check as PASS, FAIL, BLOCKED or NOT RUN in M01_REPORT.md and retain commands and limitations.

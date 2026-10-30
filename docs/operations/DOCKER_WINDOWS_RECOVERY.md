@@ -14,7 +14,7 @@ Preserved backups:
 - `C:\Users\techv\AppData\Local\Docker\run-stale-20261030-085155`
 - `C:\Users\techv\AppData\Local\docker-secrets-engine-stale-20261030-085155`
 
-The first restart exposed the second stale endpoint. The second restart progressed through engine startup and Compose began pulling project service images. Final engine and integration results belong in the M01 report.
+The first restart exposed the second stale endpoint. The second restart restored Docker server 29.6.2. Docker Hub and ECR layer downloads then failed with connection resets; Google's Docker Hub cache supplied the same service-image versions, with full manifest digests verified against Docker Hub. Both service containers became healthy and real PostgreSQL/Redis/queue tests passed. Final image-build and integration results belong in the M01 report.
 
 ## If this recurs
 

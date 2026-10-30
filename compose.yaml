@@ -32,11 +32,12 @@ services:
     working_dir: /app/backend
     env_file: backend/.env
     environment:
+      APP_URL: http://localhost:${APP_PORT:-8000}
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    ports: ["127.0.0.1:8000:8000"]
+    ports: ["127.0.0.1:${APP_PORT:-8000}:8000"]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }

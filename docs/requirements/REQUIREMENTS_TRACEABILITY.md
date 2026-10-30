@@ -6,9 +6,9 @@ Baseline: PRD v1.1, SAD v1.0 and master request. Range identifiers are preserved
 |---|---|---|---|
 | Master M00, SAD section 14 | M00 | Architecture validation, technology review, ADR-001–018 | Reviewed; foundation decisions selected |
 | SAD section 6 | M00/M01 | Canonical `backend/resources/js`, ADR-003 | Implemented |
-| SAD-AC-001 | M01 | Compose, setup scripts, LOCAL_SETUP | Verification recorded in M01 report |
-| NFR-005, SEC-008 | M01 | CI formatting/static/frontend/scan jobs, lockfiles | Hosted CI not yet executed |
-| NFR-006 | M01 | PostgreSQL migrations and integration round trip | See M01 report; not tenant fleet migrations |
+| SAD-AC-001 | M01 | Compose, setup scripts, LOCAL_SETUP | Docker build/start and live service verification recorded in M01 report |
+| NFR-005, SEC-008 | M01 | CI formatting/static/frontend/scan jobs, lockfiles | Hosted CI and secret scanning passed; see linked run in M01 report |
+| NFR-006 | M01 | PostgreSQL migrations and integration round trip | Verified on platform/test databases; tenant fleet migrations remain deferred |
 | NFR-007, ARC-BE-010 | M01 | JSON formatter, generated correlation IDs, sanitized readiness | Foundation only; audit M02 |
 | SAD-AC-002, ARC-BE-004 | M01 | Module convention and static import/manifest checker | Foundation only; zero business modules |
 | SAD-AC-013, NFR-003 | M00/M01 | Versioned API/event design; health OpenAPI | No business API implemented |
