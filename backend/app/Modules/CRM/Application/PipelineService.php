@@ -95,8 +95,8 @@ final class PipelineService
 
     public function target(string $company, string $pipeline, string $stage): \stdClass
     {
-        $row = DB::connection('tenant')->table('crm_stages as s')->join('crm_pipelines as p', 'p.id', '=', 's.pipeline_id')->where('s.id',$stage)->where('s.pipeline_id',$pipeline)->where('s.company_id',$company)->where('s.active',true)->where('p.active',true)->select('s.*')->first();
-        abort_unless($row !== null,422,'Choose an active stage in the selected company pipeline.');
+        $row = DB::connection('tenant')->table('crm_stages as s')->join('crm_pipelines as p', 'p.id', '=', 's.pipeline_id')->where('s.id', $stage)->where('s.pipeline_id', $pipeline)->where('s.company_id', $company)->where('s.active', true)->where('p.active', true)->select('s.*')->first();
+        abort_unless($row !== null, 422, 'Choose an active stage in the selected company pipeline.');
 
         return $row;
     }

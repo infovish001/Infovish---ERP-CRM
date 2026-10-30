@@ -78,7 +78,7 @@ final class OpportunityService implements Opportunities
                 $stage = app(PipelineService::class)->target($company, $row->pipeline_id, $data['stage_id'])->id;
             }
             DB::connection('tenant')->table('crm_opportunities')->where('id', $id)->update(['stage_id' => $stage, 'status' => in_array($data['action'], ['won', 'lost'], true) ? $data['action'] : 'open', 'reason' => $data['reason'] ?? null, 'revision' => $row->revision + 1, 'updated_at' => now()]);
-            $access->event($company,'opportunity',$id,'opportunity.'.$data['action'],$data['reason'] ?? null,$row->stage_id,$stage);
+            $access->event($company, 'opportunity', $id, 'opportunity.'.$data['action'], $data['reason'] ?? null, $row->stage_id, $stage);
 
             return $id;
         }, 'crm.manage');

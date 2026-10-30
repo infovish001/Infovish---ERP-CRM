@@ -1,6 +1,6 @@
 # M04 CRM implementation and verification
 
-Status: IN PROGRESS pending final container and hosted CI acceptance. Authorized by the user's continuation after M03 handoff on 2026-10-30. M05 remains unauthorized.
+Status: IN PROGRESS pending hosted CI acceptance. Authorized by the user's continuation after M03 handoff on 2026-10-30. M05 remains unauthorized.
 
 ## Delivered scope
 
@@ -24,10 +24,13 @@ The Figma CRM frame was inspected: navy navigation, compact header, pale workspa
 | PHP formatting / PHPStan level 6 / module boundaries | PASS, including the post-lock authorization change; three bundled modules with declared contract seams |
 | Frontend typecheck/lint/Vitest/build | PASS: 14 tests across 4 files |
 | OpenAPI validation | PASS, version 0.4.0 CRM routes/schemas |
-| Docker build and complete isolated suite | Pending |
+| Docker build and complete isolated suite | PASS: 65 tests / 435 assertions on PHP 8.5.12; app/worker healthy and no persistent provisioning credentials |
 | Real authenticated browser and local schema upgrade | PASS: disposable tenant lifecycle, conversion, activities, exact forecasts, mobile navigation and 12 worker-delivered events; actual Infovish tenant upgraded to schema 3 with preserved records |
 | Dependency audits | PASS: Composer validation/audit and npm audit, no reported advisories |
-| Secret scan / hosted CI | Pending final verification |
+| Local secret scan | PASS: Gitleaks 8.30.1, all 222 Git-includable files, no leaks |
+| Hosted CI / history secret scan | Initial history scan passed; rerun pending after formatting correction |
+
+The first hosted run stopped at Pint: two CRM files retained spacing differences masked by the local formatting cache. Fresh-cache formatting corrected only whitespace, and an independent fresh-cache check passed. The full container suite above passed before that whitespace-only correction. Final readiness and registered owner sign-in both returned HTTP 200.
 
 Expanded tests cover assigned-member/auditor/company/tenant boundaries, duplicate IDs, inactive entitlement/module/MFA, CSRF, stale revisions, company-grant revocation while waiting for the mutation lock, explicit customer reuse/collision, conversion retry/concurrency, rollback after customer creation, exact large/small forecasts/rounding/unknowns, lost/won/reopen behavior, immutable history, activity parent/time/terminal state, schema-2 upgrade preservation and ID-only CRM member events through real Redis. Tests use dedicated infovish_test and uniquely named tenant databases/roles, with restricted runtime access and separate operator credentials. Earlier M02/M03 regression remains mandatory.
 
