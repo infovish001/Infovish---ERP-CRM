@@ -34,7 +34,7 @@ final class Audit
             'tenant.provisioned', 'tenant.provision_failed', 'tenant.suspended', 'tenant.resumed', 'tenant.domain_registered', 'membership.updated',
             'company.created', 'company.updated', 'branch.created', 'branch.updated', 'department.created', 'department.updated',
             'tenant.schema_upgraded', 'module.entitlement_changed', 'module.enabled', 'module.disabled', 'contact.created', 'contact.updated',
-            'product.created', 'product.updated', 'variant.created', 'variant.updated', 'event.replayed'];
+            'product.created', 'product.updated', 'variant.created', 'variant.updated', 'event.replayed', 'crm.lead.created', 'crm.lead.updated', 'crm.lead.qualify', 'crm.lead.lost', 'crm.lead.reopen', 'crm.lead.converted', 'crm.opportunity.created', 'crm.opportunity.updated', 'crm.opportunity.move', 'crm.opportunity.won', 'crm.opportunity.lost', 'crm.opportunity.reopen', 'crm.pipeline.created', 'crm.pipeline.updated', 'crm.stage.created', 'crm.stage.updated', 'crm.activity.created', 'crm.activity.updated', 'crm.activity.done', 'crm.activity.cancelled'];
         if (! in_array($action, $allowed, true) || array_diff(array_keys($metadata), ['role', 'active', 'company_id', 'branch_id', 'changed_fields'])) {
             throw new InvalidArgumentException('Unsupported audit event metadata.');
         }

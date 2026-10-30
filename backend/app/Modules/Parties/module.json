@@ -5,7 +5,8 @@
     "dependencies": {},
     "contracts": [
         "Contacts",
-        "ContactData"
+        "ContactData",
+        "NewCustomer"
     ],
     "migrations": "Infrastructure/Migrations"
 }

@@ -2,6 +2,10 @@
 
 ## Unreleased — 2026-10-30
 
+- Added M04 CRM leads, company pipelines/stages, assigned opportunities/activities, immutable transition history and exact probability-weighted estimates.
+- Added explicit customer conversion through Parties public contracts with transaction rollback, idempotency and concurrent conversion protection, plus schema-3 upgrades preserving master data.
+- Added member/auditor CRM authorization, SQL-error privacy controls, CRM UI/API documentation and acceptance tests. M05 remains gated.
+
 - Added M03 bundled module manifests/lifecycle/entitlements, additive tenant upgrades, company-scoped contacts and catalog variants/prices, immutable public DTO contracts, transactional numbering/idempotency and Redis outbox journal delivery.
 - Added revision conflicts, master-data UI/API workflows, dependency/concurrency/upgrade/failure tests and operator runbooks.
 - Corrected host-cookie initialization when Fortify resolves its session before tenant routing.

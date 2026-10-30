@@ -66,7 +66,7 @@ final class MasterDataController extends Controller
     {
         abort_unless($context->can('organization.manage'), 403);
         $data = $request->validate(['page' => 'sometimes|integer|min:1|max:100000']);
-        $ready = DB::connection('pgsql')->table('tenants')->where('id', $context->requireTenantId())->value('schema_version') === 2;
+        $ready = DB::connection('pgsql')->table('tenants')->where('id', $context->requireTenantId())->value('schema_version') >= 2;
         abort_unless($ready, 409, 'Operator upgrade required.');
 
         return response()->json(DB::connection('tenant')->table('event_outbox')->select('id', 'event_type', 'event_version', 'aggregate_id', 'company_id', 'state', 'attempts', 'error_code', 'occurred_at', 'delivered_at')->orderByDesc('occurred_at')->orderByDesc('id')->simplePaginate(25, page: $data['page'] ?? 1));

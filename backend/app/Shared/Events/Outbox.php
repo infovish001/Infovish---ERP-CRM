@@ -62,14 +62,14 @@ final class Outbox
             try {
                 DB::connection('tenant')->transaction(function () use ($row, $id) {
                     $context = app(TenantContext::class);
-                    abort_unless($row->tenant_id === $context->requireTenantId() && $row->event_version === 1 && in_array($row->event_type, ['contact.created', 'contact.updated', 'product.created', 'product.updated', 'variant.created', 'variant.updated'], true), 422);
-                    abort_unless(($row->module === 'Parties' && str_starts_with($row->event_type, 'contact.')) || ($row->module === 'Catalog' && ! str_starts_with($row->event_type, 'contact.')), 422);
+                    abort_unless($row->tenant_id === $context->requireTenantId() && $row->event_version === 1 && in_array($row->event_type, ['contact.created', 'contact.updated', 'product.created', 'product.updated', 'variant.created', 'variant.updated', 'crm.lead.created', 'crm.lead.updated', 'crm.lead.qualify', 'crm.lead.lost', 'crm.lead.reopen', 'crm.lead.converted', 'crm.opportunity.created', 'crm.opportunity.updated', 'crm.opportunity.move', 'crm.opportunity.won', 'crm.opportunity.lost', 'crm.opportunity.reopen', 'crm.pipeline.created', 'crm.pipeline.updated', 'crm.stage.created', 'crm.stage.updated', 'crm.activity.created', 'crm.activity.updated', 'crm.activity.done', 'crm.activity.cancelled'], true), 422);
+                    abort_unless(($row->module === 'Parties' && str_starts_with($row->event_type, 'contact.')) || ($row->module === 'Catalog' && (str_starts_with($row->event_type, 'product.') || str_starts_with($row->event_type, 'variant.'))) || ($row->module === 'CRM' && str_starts_with($row->event_type, 'crm.')), 422);
                     app(ModuleAccess::class)->require($row->module, true);
                     app(CompanyScope::class)->verify($row->company_id);
-                    // The original privileged author must still be an active authorized principal.
-                    abort_unless(DB::connection('pgsql')->table('memberships')->join('users', 'users.id', '=', 'memberships.user_id')
-                        ->where('tenant_id', $row->tenant_id)->where('user_id', $row->actor_id)->where('memberships.active', true)->where('users.active', true)
-                        ->whereIn('role', ['owner', 'administrator'])->whereNotNull('users.two_factor_confirmed_at')->exists(), 403);
+                    $author = DB::connection('pgsql')->table('memberships')->join('users', 'users.id', '=', 'memberships.user_id')->where('tenant_id', $row->tenant_id)->where('user_id', $row->actor_id)->where('memberships.active', true)->where('users.active', true)->select('role', 'company_ids', 'users.two_factor_confirmed_at')->first();
+                    $privileged = $author && in_array($author->role, ['owner', 'administrator'], true) && $author->two_factor_confirmed_at !== null;
+                    $crmMember = $author && $row->module === 'CRM' && $author->role === 'member' && in_array($row->company_id, json_decode($author->company_ids, true, flags: JSON_THROW_ON_ERROR), true);
+                    abort_unless($privileged || $crmMember, 403);
                     DB::connection('tenant')->table('event_receipts')->insertOrIgnore(['event_id' => $id, 'consumer' => 'master-data-journal-v1', 'processed_at' => now()]);
                     DB::connection('tenant')->table('event_outbox')->where('id', $id)->update(['state' => 'delivered', 'delivered_at' => now(), 'error_code' => null]);
                 });

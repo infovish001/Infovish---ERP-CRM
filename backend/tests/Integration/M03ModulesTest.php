@@ -286,15 +286,15 @@ class M03ModulesTest extends TenantIntegrationTest
         $connection['database'] = $row->database_name;
         config(['database.connections.upgrade_fixture' => $connection]);
         $db = DB::connection('upgrade_fixture');
-        foreach (['catalog_variants', 'catalog_products', 'parties_contacts', 'event_receipts', 'event_outbox', 'idempotency_records', 'document_counters', 'module_installations'] as $table) {
+        foreach (['crm_history', 'crm_activities', 'crm_opportunities', 'crm_leads', 'crm_stages', 'crm_pipelines', 'catalog_variants', 'catalog_products', 'parties_contacts', 'event_receipts', 'event_outbox', 'idempotency_records', 'document_counters', 'module_installations'] as $table) {
             $db->getSchemaBuilder()->drop($table);
         }
-        $db->table('migrations')->whereIn('migration', ['2026_10_30_000002_create_shared_module_services', '2026_10_30_100001_create_parties', '2026_10_30_100002_create_catalog'])->delete();
+        $db->table('migrations')->whereIn('migration', ['2026_10_30_100003_create_crm', '2026_10_30_000002_create_shared_module_services', '2026_10_30_100001_create_parties', '2026_10_30_100002_create_catalog'])->delete();
         DB::purge('upgrade_fixture');
         DB::connection('provisioner')->table('tenants')->where('id', $this->a)->update(['schema_version' => 1]);
         app(TenantSchema::class)->upgrade($row->slug);
         app(TenantSchema::class)->upgrade($row->slug);
-        $this->assertSame(2, DB::connection('pgsql')->table('tenants')->where('id', $this->a)->value('schema_version'));
+        $this->assertSame(TenantSchema::VERSION, DB::connection('pgsql')->table('tenants')->where('id', $this->a)->value('schema_version'));
         $this->execute($this->a, function () {
             $this->assertSame($this->companyA, DB::connection('tenant')->table('companies')->value('id'));
             $this->assertFalse(app(ModuleAccess::class)->allowed('Parties'));

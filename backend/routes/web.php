@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\WorkspaceController;
+use App\Modules\CRM\Presentation\CrmController;
 use App\Shared\Health\Readiness;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,10 +27,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/security', [WorkspaceController::class, 'security']);
     Route::put('/account/password', [WorkspaceController::class, 'password']);
     Route::middleware('privileged-mfa')->group(function () {
+        Route::get('/workspace/crm', [CrmController::class, 'page']);
+        Route::prefix('api/v1/crm')->middleware('throttle:120,1')->controller(CrmController::class)->group(function () {
+            Route::get('setup', 'setup');
+            Route::get('forecast', 'forecast');
+            Route::post('pipelines', 'pipeline');
+            Route::put('pipelines/{id}', 'pipeline')->whereUuid('id');
+            Route::post('pipelines/{pipeline}/stages', 'stage')->whereUuid('pipeline');
+            Route::put('pipelines/{pipeline}/stages/{id}', 'stage')->whereUuid('pipeline')->whereUuid('id');
+            foreach (['leads' => 'lead', 'opportunities' => 'opportunity'] as $path => $kind) {
+                Route::get($path, 'index')->name('crm.'.$kind.'.list');
+                Route::post($path, 'save')->name('crm.'.$kind.'.create');
+                Route::get($path.'/{id}', 'detail')->whereUuid('id')->name('crm.'.$kind.'.detail');
+                Route::put($path.'/{id}', 'save')->whereUuid('id')->name('crm.'.$kind.'.update');
+                Route::post($path.'/{id}/transition', 'transition')->whereUuid('id')->name('crm.'.$kind.'.transition');
+            }
+            Route::post('leads/{id}/convert', 'convert')->whereUuid('id');
+            Route::post('{kind}/{parent}/activities', 'activity')->whereIn('kind', ['lead', 'opportunity'])->whereUuid('parent');
+            Route::put('{kind}/{parent}/activities/{id}', 'activity')->whereIn('kind', ['lead', 'opportunity'])->whereUuid('parent')->whereUuid('id');
+            Route::post('activities/{id}/transition', 'activityState')->whereUuid('id');
+        });
         Route::get('/workspace/master-data', [MasterDataController::class, 'page']);
         Route::prefix('api/v1')->middleware('throttle:120,1')->controller(MasterDataController::class)->group(function () {
             Route::get('modules', 'modules');
-            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog']);
+            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog', 'CRM']);
             Route::get('contacts', 'contacts');
             Route::post('contacts', 'saveContact');
             Route::put('contacts/{id}', 'saveContact')->whereUuid('id');

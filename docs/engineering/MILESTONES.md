@@ -6,7 +6,7 @@
 | M01 | Engineering foundation described below | Authorized if M00 passes |
 | M02 | Tenant provisioning, identity, organization, audit | Authorized by user continuation after M01; evidence in M02_REPORT.md |
 | M03 | Module framework, shared services, catalog and contacts | Authorized after M02; verified in M03_REPORT; stop before M04 |
-| M04 | CRM | Future |
+| M04 | CRM | Authorized after M03; scope/evidence in M04_SPEC and M04_REPORT; stop before M05 |
 | M05 | Sales and first commercial release | Future |
 | M06 | Finance and accounting | Future |
 | M07 | Inventory and procurement | Future |
@@ -24,3 +24,5 @@ M01 acceptance: reproducible setup; application boots; Inertia renders; real Pos
 The paragraph above preserves the original M01 gate. The user's subsequent continuation authorized M02. Its scope and acceptance scenarios are in [M02_SPEC.md](M02_SPEC.md), operations in [M02_SETUP.md](M02_SETUP.md), and actual verification in [M02_REPORT.md](M02_REPORT.md). Stop before M03.
 
 The subsequent continuation after M02 authorizes M03 only. M03_SPEC defines the implementation baseline and M03_REPORT records evidence. Historical earlier stop gates above remain as provenance. Stop before M04.
+
+The user continuation after verified M03 authorizes M04 only. Earlier gates above are historical; the current boundary is before M05.

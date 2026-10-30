@@ -26,7 +26,7 @@ final class TenantExecution
             $member = DB::connection('pgsql')->table('memberships')->join('users', 'users.id', '=', 'memberships.user_id')
                 ->where('tenant_id', $tenantId)->where('user_id', $actorId)->where('memberships.active', true)->where('users.active', true)
                 ->select('memberships.*', 'users.two_factor_confirmed_at')->first();
-            if (! $tenant || $tenant->status !== 'active' || ! in_array($tenant->schema_version, [1, 2], true) || ! $member) {
+            if (! $tenant || $tenant->status !== 'active' || ! in_array($tenant->schema_version, [1, 2, 3], true) || ! $member) {
                 throw new AccessDeniedHttpException('Workspace access is unavailable.');
             }
             config(['database.connections.tenant' => [

@@ -31,6 +31,10 @@ final class ModuleRegistry
                     throw new InvalidArgumentException('Invalid public contract declaration.');
                 }
             }
+            $data['min_schema'] ??= 2;
+            if (! in_array($data['min_schema'], [2, 3], true)) {
+                throw new InvalidArgumentException('Unsupported module schema requirement.');
+            }
             $manifests[$name] = $data;
         }
         $visiting = $visited = [];

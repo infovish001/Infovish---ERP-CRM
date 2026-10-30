@@ -11,11 +11,23 @@ use Illuminate\Support\Facades\Validator;
 final class Mutation
 {
     /** @param array<string,mixed> $payload @param Closure(): string $operation */
-    public function run(string $module, string $company, string $operationName, array $payload, ?string $key, Closure $operation): string
+    public function run(string $module, string $company, string $operationName, array $payload, ?string $key, Closure $operation, string $permission = 'organization.manage'): string
     {
-        return DB::connection('tenant')->transaction(function () use ($module, $company, $operationName, $payload, $key, $operation) {
+        if (! in_array($permission, ['organization.manage', 'crm.manage'], true) || ($permission === 'crm.manage' && $module !== 'CRM')) {
+            throw new \InvalidArgumentException('Unsupported mutation permission.');
+        }
+
+        return DB::connection('tenant')->transaction(function () use ($module, $company, $operationName, $payload, $key, $operation, $permission) {
             DB::connection('tenant')->select("SELECT pg_advisory_xact_lock(hashtext('module-lifecycle'))");
-            app(ModuleAccess::class)->require($module, true);
+            // A request may have waited on the tenant lock while an operator revoked access.
+            $context = app(TenantContext::class);
+            $principal = DB::connection('pgsql')->table('memberships')->join('users', 'users.id', '=', 'memberships.user_id')
+                ->where('tenant_id', $context->requireTenantId())->where('user_id', $context->actorId())->where('memberships.active', true)->where('users.active', true)
+                ->select('role', 'company_ids', 'users.two_factor_confirmed_at')->first();
+            $privileged = $principal && in_array($principal->role, ['owner', 'administrator'], true) && $principal->two_factor_confirmed_at !== null;
+            $crmMember = $principal && $permission === 'crm.manage' && $principal->role === 'member' && in_array($company, json_decode($principal->company_ids, true, flags: JSON_THROW_ON_ERROR), true);
+            abort_unless($principal && $principal->role === $context->role() && ($privileged || $crmMember), 403, 'Workspace permission changed; sign in or reload before continuing.');
+            app(ModuleAccess::class)->require($module, true, $permission);
             app(CompanyScope::class)->verify($company);
             if ($key === null) {
                 return $operation();

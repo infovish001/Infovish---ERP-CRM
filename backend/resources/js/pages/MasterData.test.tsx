@@ -48,26 +48,24 @@ describe('master data workflows', () => {
     it('shows read-only records without edit or activation controls', async () => {
         vi.stubGlobal(
             'fetch',
-            vi
-                .fn()
-                .mockResolvedValue(
-                    respond({
-                        ...page,
-                        data: [
-                            {
-                                id: 'contact',
-                                number: 'CON-000000001',
-                                name: 'Actual contact',
-                                email: null,
-                                phone: null,
-                                customer: true,
-                                supplier: false,
-                                active: true,
-                                revision: 1,
-                            },
-                        ],
-                    }),
-                ),
+            vi.fn().mockResolvedValue(
+                respond({
+                    ...page,
+                    data: [
+                        {
+                            id: 'contact',
+                            number: 'CON-000000001',
+                            name: 'Actual contact',
+                            email: null,
+                            phone: null,
+                            customer: true,
+                            supplier: false,
+                            active: true,
+                            revision: 1,
+                        },
+                    ],
+                }),
+            ),
         );
         render(<MasterData {...props} />);
         await screen.findByText('Actual contact');
@@ -116,43 +114,41 @@ describe('master data workflows', () => {
         expect(fetcher.mock.calls[0][0]).toBe('/api/v1/modules/Parties');
     });
     it('preserves decimal prices as text and supports search pagination', async () => {
-        const fetcher = vi
-            .fn()
-            .mockImplementation((url: string) =>
-                Promise.resolve(
-                    respond(
-                        url.includes('/products')
-                            ? {
-                                  ...page,
-                                  next_page_url: 'page2',
-                                  data: [
-                                      {
-                                          id: 'product',
-                                          number: 'PRD-1',
-                                          name: 'Service',
-                                          type: 'service',
-                                          unit: 'hour',
-                                          active: true,
-                                          revision: 1,
-                                          variants: [
-                                              {
-                                                  id: 'variant',
-                                                  sku: 'SVC',
-                                                  name: 'Standard',
-                                                  attributes: {},
-                                                  list_price: '12345678901234.123456',
-                                                  currency: 'LKR',
-                                                  active: true,
-                                                  revision: 1,
-                                              },
-                                          ],
-                                      },
-                                  ],
-                              }
-                            : page,
-                    ),
+        const fetcher = vi.fn().mockImplementation((url: string) =>
+            Promise.resolve(
+                respond(
+                    url.includes('/products')
+                        ? {
+                              ...page,
+                              next_page_url: 'page2',
+                              data: [
+                                  {
+                                      id: 'product',
+                                      number: 'PRD-1',
+                                      name: 'Service',
+                                      type: 'service',
+                                      unit: 'hour',
+                                      active: true,
+                                      revision: 1,
+                                      variants: [
+                                          {
+                                              id: 'variant',
+                                              sku: 'SVC',
+                                              name: 'Standard',
+                                              attributes: {},
+                                              list_price: '12345678901234.123456',
+                                              currency: 'LKR',
+                                              active: true,
+                                              revision: 1,
+                                          },
+                                      ],
+                                  },
+                              ],
+                          }
+                        : page,
                 ),
-            );
+            ),
+        );
         vi.stubGlobal('fetch', fetcher);
         render(<MasterData {...props} />);
         fireEvent.click(screen.getByRole('tab', { name: 'Products & services' }));

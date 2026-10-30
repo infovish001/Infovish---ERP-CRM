@@ -1,0 +1,1 @@
+{"name":"CRM","version":"1.0.0","framework_major":1,"min_schema":3,"dependencies":{"Parties":"^1.0"},"contracts":["Opportunities","OpportunityData"],"migrations":"Infrastructure/Migrations"}

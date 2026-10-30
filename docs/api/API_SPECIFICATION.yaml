@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: Infovish platform and master data API
-  version: 0.3.0
+  title: Infovish platform, master data and CRM API
+  version: 0.4.0
   description: >-
     M02 session-authenticated organization APIs run on an exact registered tenant host. Sign in through Fortify,
     complete MFA when enrolled, and provide the host-bound session cookie. Mutations require the page's CSRF token.
@@ -10,7 +10,9 @@ info:
     require confirmed MFA. Creates require Idempotency-Key; repeated identical requests return the same UUID,
     conflicting reuse returns 409. Updates require the last observed revision. Master-data routes allow 120 requests per
     minute per authenticated actor. List endpoints return 25 records per page. Decimal list prices are strings in
-    company base currency; no tax, discount or currency conversion is performed.
+    company base currency; no tax, discount or currency conversion is performed. M04 CRM depends on Parties and tenant
+    schema 3. Members read/write assigned records in granted companies; auditors read granted companies; privileged MFA
+    users configure pipelines, reassign, convert and reopen. No Sales orders or external communications are created.
 paths:
   /login:
     post:
@@ -689,6 +691,7 @@ paths:
             enum:
               - Parties
               - Catalog
+              - CRM
         - $ref: '#/components/parameters/Csrf'
       responses:
         '200':
@@ -807,6 +810,1093 @@ paths:
           description: Validation failure; message and field errors returned.
         '429':
           description: Request rate limit exceeded.
+  /api/v1/crm/leads:
+    get:
+      operationId: listCrmLead
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+        - name: status
+          in: query
+          schema:
+            enum:
+              - new
+              - qualified
+              - lost
+              - converted
+      responses:
+        '200':
+          description: 25 records per page, company/assignment scoped.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmLead'
+                  total:
+                    type: integer
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+    post:
+      operationId: createCrmLead
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrmLeadInput'
+  /api/v1/crm/leads/{id}:
+    get:
+      operationId: getCrmLead
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Company'
+      responses:
+        '200':
+          description: Authorized record, latest 100 history rows, and up to 100 planned/recent activities; earlier rows retained.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  record:
+                    $ref: '#/components/schemas/CrmLead'
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmHistory'
+                  activities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmActivity'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+    put:
+      operationId: updateCrmLead
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CrmLeadInput'
+                - required:
+                    - revision
+  /api/v1/crm/leads/{id}/transition:
+    post:
+      operationId: transitionCrmLead
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - action
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                action:
+                  enum:
+                    - qualify
+                    - lost
+                    - reopen
+                revision:
+                  type: integer
+                  minimum: 1
+                stage_id:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                reason:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 500
+              description: >-
+                Loss and privileged reopen require a reason. Opportunity move/reopen requires an active stage in the
+                same pipeline. Converted leads and closed opportunities otherwise remain immutable.
+  /api/v1/crm/opportunities:
+    get:
+      operationId: listCrmOpportunity
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+        - name: status
+          in: query
+          schema:
+            enum:
+              - open
+              - won
+              - lost
+        - name: pipeline_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: stage_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 25 records per page, company/assignment scoped.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmOpportunity'
+                  total:
+                    type: integer
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+    post:
+      operationId: createCrmOpportunity
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrmOpportunityInput'
+  /api/v1/crm/opportunities/{id}:
+    get:
+      operationId: getCrmOpportunity
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Company'
+      responses:
+        '200':
+          description: Authorized record, latest 100 history rows, and up to 100 planned/recent activities; earlier rows retained.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  record:
+                    $ref: '#/components/schemas/CrmOpportunity'
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmHistory'
+                  activities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmActivity'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+    put:
+      operationId: updateCrmOpportunity
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - title
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                  maxLength: 160
+                assigned_to:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                expected_amount:
+                  $ref: '#/components/schemas/CrmAmount'
+                expected_close:
+                  type:
+                    - string
+                    - 'null'
+                  format: date
+                revision:
+                  type: integer
+                  minimum: 1
+  /api/v1/crm/opportunities/{id}/transition:
+    post:
+      operationId: transitionCrmOpportunity
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - action
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                action:
+                  enum:
+                    - move
+                    - won
+                    - lost
+                    - reopen
+                revision:
+                  type: integer
+                  minimum: 1
+                stage_id:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                reason:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 500
+              description: >-
+                Loss and privileged reopen require a reason. Opportunity move/reopen requires an active stage in the
+                same pipeline. Converted leads and closed opportunities otherwise remain immutable.
+  /api/v1/crm/leads/{id}/convert:
+    post:
+      operationId: convertCrmLead
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - revision
+                - customer_mode
+                - pipeline_id
+                - stage_id
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                revision:
+                  type: integer
+                  minimum: 1
+                customer_mode:
+                  enum:
+                    - new
+                    - existing
+                contact_id:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                pipeline_id:
+                  type: string
+                  format: uuid
+                stage_id:
+                  type: string
+                  format: uuid
+                expected_amount:
+                  $ref: '#/components/schemas/CrmAmount'
+                expected_close:
+                  type:
+                    - string
+                    - 'null'
+                  format: date
+              description: >-
+                Privileged MFA only, latest qualified lead. Existing customer requires explicit contact_id; new customer
+                uses Parties public contract. All tenant data/audit/outbox/numbering/idempotency changes commit
+                together. Matching second-key retries return the same opportunity; conflicting conversion intent returns
+                409.
+  /api/v1/crm/setup:
+    get:
+      operationId: crmSetup
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: >-
+            Company pipelines/stages, assignable members and up to 25 active customers matching q through Parties
+            contract.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pipelines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrmPipeline'
+                  assignees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                  customers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        number:
+                          type: string
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+  /api/v1/crm/forecast:
+    get:
+      operationId: crmForecast
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: pipeline_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exact current probability-weighted estimates, never recognized revenue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrmForecast'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+  /api/v1/crm/pipelines:
+    post:
+      operationId: createCrmPipeline
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrmPipelineInput'
+  /api/v1/crm/pipelines/{id}:
+    put:
+      operationId: updateCrmPipeline
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - name
+                - active
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                  maxLength: 120
+                active:
+                  type: boolean
+                revision:
+                  type: integer
+                  minimum: 1
+  /api/v1/crm/pipelines/{pipeline}/stages:
+    post:
+      operationId: createCrmStage
+      security:
+        - session: []
+      parameters:
+        - name: pipeline
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrmStageInput'
+  /api/v1/crm/pipelines/{pipeline}/stages/{id}:
+    put:
+      operationId: updateCrmStage
+      security:
+        - session: []
+      parameters:
+        - name: pipeline
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CrmStageInput'
+                - required:
+                    - revision
+  /api/v1/crm/{kind}/{parent}/activities:
+    post:
+      operationId: createCrmActivity
+      security:
+        - session: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema:
+            enum:
+              - lead
+              - opportunity
+        - name: parent
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrmActivityInput'
+  /api/v1/crm/{kind}/{parent}/activities/{id}:
+    put:
+      operationId: updateCrmActivity
+      security:
+        - session: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema:
+            enum:
+              - lead
+              - opportunity
+        - name: parent
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CrmActivityInput'
+                - required:
+                    - revision
+  /api/v1/crm/activities/{id}/transition:
+    post:
+      operationId: transitionCrmActivity
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Resource UUID. Matching create/conversion retries return the same UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: MFA, module/dependency/entitlement or company/role access denied.
+        '404':
+          description: Record unavailable in the authorized company/assignment scope.
+        '409':
+          description: Stale revision, invalid lifecycle, conflicting idempotency/conversion intent or schema requirement.
+        '419':
+          description: CSRF token missing or invalid.
+        '422':
+          description: Input validation or active parent/assignee rule failed; message and field errors returned.
+        '429':
+          description: Rate limit exceeded (120 requests/minute per authenticated actor).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - status
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                status:
+                  enum:
+                    - done
+                    - cancelled
+                revision:
+                  type: integer
+                  minimum: 1
 components:
   securitySchemes:
     session:
@@ -1074,6 +2164,7 @@ components:
           enum:
             - Parties
             - Catalog
+            - CRM
         version:
           type: string
           maxLength: 20
@@ -1128,3 +2219,360 @@ components:
             - string
             - 'null'
           format: date-time
+    CrmLeadInput:
+      type: object
+      required:
+        - company_id
+        - title
+        - contact_name
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 160
+        contact_name:
+          type: string
+          maxLength: 160
+        email:
+          type:
+            - string
+            - 'null'
+          format: email
+          maxLength: 254
+        phone:
+          type:
+            - string
+            - 'null'
+          maxLength: 40
+        source:
+          type:
+            - string
+            - 'null'
+          maxLength: 80
+        assigned_to:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+    CrmLead:
+      allOf:
+        - $ref: '#/components/schemas/CrmLeadInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+              maxLength: 30
+            status:
+              enum:
+                - new
+                - qualified
+                - lost
+                - converted
+            reason:
+              type:
+                - string
+                - 'null'
+            contact_id:
+              type:
+                - string
+                - 'null'
+              format: uuid
+            opportunity_id:
+              type:
+                - string
+                - 'null'
+              format: uuid
+    CrmOpportunityInput:
+      type: object
+      required:
+        - company_id
+        - title
+        - contact_id
+        - pipeline_id
+        - stage_id
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 160
+        assigned_to:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        contact_id:
+          type: string
+          format: uuid
+        pipeline_id:
+          type: string
+          format: uuid
+        stage_id:
+          type: string
+          format: uuid
+        expected_amount:
+          $ref: '#/components/schemas/CrmAmount'
+        expected_close:
+          type:
+            - string
+            - 'null'
+          format: date
+        revision:
+          type: integer
+          minimum: 1
+    CrmOpportunity:
+      allOf:
+        - $ref: '#/components/schemas/CrmOpportunityInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+              maxLength: 30
+            lead_id:
+              type:
+                - string
+                - 'null'
+              format: uuid
+            currency:
+              type: string
+              pattern: ^[A-Z]{3}$
+            status:
+              enum:
+                - open
+                - won
+                - lost
+            reason:
+              type:
+                - string
+                - 'null'
+    CrmStageInput:
+      type: object
+      required:
+        - company_id
+        - name
+        - probability
+        - active
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 80
+        probability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+    CrmStage:
+      allOf:
+        - $ref: '#/components/schemas/CrmStageInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            pipeline_id:
+              type: string
+              format: uuid
+            position:
+              type: integer
+              minimum: 1
+    CrmPipelineInput:
+      type: object
+      required:
+        - company_id
+        - name
+        - active
+        - stages
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        stages:
+          type: array
+          minItems: 1
+          maxItems: 12
+          items:
+            type: object
+            required:
+              - name
+              - probability
+            properties:
+              name:
+                type: string
+                maxLength: 80
+              probability:
+                type: integer
+                minimum: 0
+                maximum: 100
+    CrmPipeline:
+      type: object
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrmStage'
+    CrmActivityInput:
+      type: object
+      required:
+        - company_id
+        - subject
+        - type
+        - due_at
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          maxLength: 160
+        type:
+          enum:
+            - call
+            - meeting
+            - task
+        note:
+          type:
+            - string
+            - 'null'
+          maxLength: 2000
+        due_at:
+          type: string
+          format: date-time
+          description: Explicit timezone/UTC required; stored in UTC.
+        revision:
+          type: integer
+          minimum: 1
+    CrmActivity:
+      allOf:
+        - $ref: '#/components/schemas/CrmActivityInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            lead_id:
+              type:
+                - string
+                - 'null'
+              format: uuid
+            opportunity_id:
+              type:
+                - string
+                - 'null'
+              format: uuid
+            status:
+              enum:
+                - planned
+                - done
+                - cancelled
+            completed_at:
+              type:
+                - string
+                - 'null'
+              format: date-time
+    CrmHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        company_id:
+          type: string
+          format: uuid
+        resource_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          maxLength: 20
+        actor_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          maxLength: 40
+        from_stage:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        to_stage:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        reason:
+          type:
+            - string
+            - 'null'
+          maxLength: 500
+        occurred_at:
+          type: string
+          format: date-time
+    CrmForecast:
+      type: object
+      properties:
+        unweighted:
+          type: string
+        weighted:
+          type: string
+        currency:
+          type: string
+        open_count:
+          type: integer
+        known_count:
+          type: integer
+        unknown_count:
+          type: integer
+        label:
+          type: string
+      description: >-
+        Estimates over all authorized open opportunities in an optional pipeline, independently of list search/status
+        filters. NUMERIC amounts; each weighted amount rounds half-up to six places before summation. Unknown amounts
+        excluded from sums and counted explicitly. No recognized revenue or mixed-currency calculation.
+    CrmAmount:
+      type:
+        - string
+        - 'null'
+      pattern: ^(0|[1-9][0-9]{0,13})(\.[0-9]{1,6})?$
+      description: Optional nonnegative NUMERIC(20,6) CRM estimate returned as a six-place decimal string; null means unknown.

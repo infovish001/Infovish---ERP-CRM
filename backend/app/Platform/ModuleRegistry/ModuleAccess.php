@@ -12,7 +12,7 @@ final class ModuleAccess
     {
         $tenant = app(TenantContext::class)->requireTenantId();
         $definition = app(ModuleRegistry::class)->manifests()[$module] ?? null;
-        if (! $definition || DB::connection('pgsql')->table('tenants')->where('id', $tenant)->value('schema_version') !== 2) {
+        if (! $definition || ! in_array(DB::connection('pgsql')->table('tenants')->where('id', $tenant)->value('schema_version'), range($definition['min_schema'], 3), true)) {
             return false;
         }
 
@@ -30,11 +30,11 @@ final class ModuleAccess
         return true;
     }
 
-    public function require(string $module, bool $write = false): void
+    public function require(string $module, bool $write = false, string $permission = 'organization.manage'): void
     {
         abort_unless($this->allowed($module), 403, 'Module access is unavailable.');
         $context = app(TenantContext::class);
-        abort_unless($context->can($write ? 'organization.manage' : 'organization.view'), 403);
+        abort_unless($context->can($write ? $permission : 'organization.view'), 403);
         foreach (app(ModuleRegistry::class)->manifests()[$module]['dependencies'] as $dependency => $version) {
             abort_unless($this->allowed($dependency), 403, 'A module dependency is unavailable.');
         }
@@ -44,7 +44,7 @@ final class ModuleAccess
     public function diagnostics(): array
     {
         $tenant = app(TenantContext::class)->requireTenantId();
-        $ready = DB::connection('pgsql')->table('tenants')->where('id', $tenant)->value('schema_version') === 2;
+        $ready = DB::connection('pgsql')->table('tenants')->where('id', $tenant)->value('schema_version') >= 2;
         $rows = [];
         foreach (app(ModuleRegistry::class)->manifests() as $name => $definition) {
             $installed = $ready ? DB::connection('tenant')->table('module_installations')->where('module', $name)->first() : null;
@@ -62,11 +62,11 @@ final class ModuleAccess
         abort_unless($context->can('organization.manage'), 403);
         $definitions = app(ModuleRegistry::class)->manifests();
         abort_unless(isset($definitions[$module]), 404);
-        abort_unless(DB::connection('pgsql')->table('tenants')->where('id', $context->requireTenantId())->value('schema_version') === 2, 409, 'An operator schema upgrade is required.');
-        DB::connection('tenant')->transaction(function () use ($module, $enabled, $definitions) {
+        abort_unless(DB::connection('pgsql')->table('tenants')->where('id', $context->requireTenantId())->value('schema_version') >= 2, 409, 'An operator schema upgrade is required.');
+        DB::connection('tenant')->transaction(function () use ($module, $enabled, $definitions, $context) {
             DB::connection('tenant')->select("SELECT pg_advisory_xact_lock(hashtext('module-lifecycle'))");
             $row = DB::connection('tenant')->table('module_installations')->where('module', $module)->first();
-            abort_unless($row && $row->version === $definitions[$module]['version'], 409, 'Module schema upgrade required.');
+            abort_unless($row && $row->version === $definitions[$module]['version'] && DB::connection('pgsql')->table('tenants')->where('id', $context->requireTenantId())->value('schema_version') >= $definitions[$module]['min_schema'], 409, 'Module schema upgrade required.');
             if ($enabled) {
                 abort_unless(DB::connection('pgsql')->table('tenant_module_entitlements')->where('tenant_id', app(TenantContext::class)->requireTenantId())->where('module', $module)->where('allowed', true)->exists(), 403);
                 foreach ($definitions[$module]['dependencies'] as $dependency => $version) {

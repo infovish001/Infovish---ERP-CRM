@@ -3,6 +3,7 @@
 namespace Tests\Integration;
 
 use App\Platform\Identity\User;
+use App\Platform\ModuleRegistry\TenantSchema;
 use App\Platform\Organization\OrganizationService;
 use App\Platform\Tenancy\TenantDomains;
 use App\Platform\Tenancy\TenantProvisioner;
@@ -29,7 +30,7 @@ class M02TenancyTest extends TenantIntegrationTest
     {
         $row = DB::connection('pgsql')->table('tenants')->where('id', $this->a)->first();
         $this->assertSame($this->a, app(TenantProvisioner::class)->provision($row->slug, $row->name, $this->hostA, $this->owner->id));
-        $this->assertSame(2, $row->schema_version);
+        $this->assertSame(TenantSchema::VERSION, $row->schema_version);
         $this->assertNotSame(Crypt::decryptString($row->database_password), $row->database_password);
         try {
             DB::connection('pgsql')->statement('CREATE DATABASE forbidden_runtime_database');

@@ -4,6 +4,7 @@ namespace App\Modules\Parties\Application;
 
 use App\Modules\Parties\Domain\Contracts\ContactData;
 use App\Modules\Parties\Domain\Contracts\Contacts;
+use App\Modules\Parties\Domain\Contracts\NewCustomer;
 use App\Platform\ModuleRegistry\ModuleAccess;
 use App\Shared\Audit\Audit;
 use App\Shared\Events\Outbox;
@@ -18,6 +19,34 @@ use Illuminate\Validation\ValidationException;
 
 final class ContactService implements Contacts
 {
+    public function findByEmail(string $companyId, string $email): ?ContactData
+    {
+        app(ModuleAccess::class)->require('Parties');
+        app(CompanyScope::class)->verify($companyId);
+        $id = DB::connection('tenant')->table('parties_contacts')->where('company_id', $companyId)->where('email', strtolower(trim($email)))->where('active', true)->value('id');
+
+        return is_string($id) ? $this->find($companyId, $id) : null;
+    }
+
+    public function createCustomer(string $companyId, NewCustomer $customer, string $idempotencyKey): ContactData
+    {
+        $id = $this->save($companyId, ['name' => $customer->name, 'email' => $customer->email, 'phone' => $customer->phone, 'customer' => true, 'supplier' => false, 'active' => true], key: $idempotencyKey);
+
+        return $this->find($companyId, $id);
+    }
+
+    /** @return list<ContactData> */
+    public function customers(string $companyId, string $search = ''): array
+    {
+        app(ModuleAccess::class)->require('Parties');
+        app(CompanyScope::class)->verify($companyId);
+        Validator::make(['q' => $search], ['q' => 'max:100'])->validate();
+
+        return DB::connection('tenant')->table('parties_contacts')->where('company_id', $companyId)->where('active', true)->where('customer', true)
+            ->where(fn ($q) => $q->where('name', 'ilike', '%'.$search.'%')->orWhere('email', 'ilike', '%'.$search.'%')->orWhere('number', 'ilike', '%'.$search.'%'))
+            ->orderBy('name')->limit(25)->get()->map(fn ($row) => new ContactData($row->id, $companyId, $row->number, $row->name, $row->customer, $row->supplier))->all();
+    }
+
     public function find(string $companyId, string $id): ContactData
     {
         app(ModuleAccess::class)->require('Parties');

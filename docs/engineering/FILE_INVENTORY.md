@@ -1,6 +1,6 @@
 # File inventory
 
-M00 through M03 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
+M00 through M04 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
 
 - `.dockerignore`
 - `.gitattributes`
@@ -25,6 +25,18 @@ M00 through M03 repository files. Original references are preserved. Generated d
 - `backend/app/Http/Middleware/HandleInertiaRequests.php`
 - `backend/app/Http/Middleware/RequirePrivilegedMfa.php`
 - `backend/app/Http/Middleware/ResolveTenantHost.php`
+- `backend/app/Modules/CRM/Application/ActivityService.php`
+- `backend/app/Modules/CRM/Application/CrmAccess.php`
+- `backend/app/Modules/CRM/Application/CrmQueries.php`
+- `backend/app/Modules/CRM/Application/LeadService.php`
+- `backend/app/Modules/CRM/Application/OpportunityService.php`
+- `backend/app/Modules/CRM/Application/PipelineService.php`
+- `backend/app/Modules/CRM/Domain/Contracts/Opportunities.php`
+- `backend/app/Modules/CRM/Domain/Contracts/OpportunityData.php`
+- `backend/app/Modules/CRM/Infrastructure/Migrations/2026_10_30_100003_create_crm.php`
+- `backend/app/Modules/CRM/Presentation/CrmController.php`
+- `backend/app/Modules/CRM/README.md`
+- `backend/app/Modules/CRM/module.json`
 - `backend/app/Modules/Catalog/Application/ProductService.php`
 - `backend/app/Modules/Catalog/Domain/Contracts/ProductData.php`
 - `backend/app/Modules/Catalog/Domain/Contracts/Products.php`
@@ -34,6 +46,7 @@ M00 through M03 repository files. Original references are preserved. Generated d
 - `backend/app/Modules/Parties/Application/ContactService.php`
 - `backend/app/Modules/Parties/Domain/Contracts/ContactData.php`
 - `backend/app/Modules/Parties/Domain/Contracts/Contacts.php`
+- `backend/app/Modules/Parties/Domain/Contracts/NewCustomer.php`
 - `backend/app/Modules/Parties/Infrastructure/Migrations/2026_10_30_100001_create_parties.php`
 - `backend/app/Modules/Parties/README.md`
 - `backend/app/Modules/Parties/module.json`
@@ -106,7 +119,12 @@ M00 through M03 repository files. Original references are preserved. Generated d
 - `backend/resources/js/app.tsx`
 - `backend/resources/js/components/AuthFrame.tsx`
 - `backend/resources/js/components/WorkspaceLayout.tsx`
+- `backend/resources/js/features/crm/Forms.tsx`
+- `backend/resources/js/features/crm/RecordDetail.tsx`
+- `backend/resources/js/features/crm/types.ts`
 - `backend/resources/js/lib/request.ts`
+- `backend/resources/js/pages/CRM.test.tsx`
+- `backend/resources/js/pages/CRM.tsx`
 - `backend/resources/js/pages/Challenge.tsx`
 - `backend/resources/js/pages/ConfirmPassword.tsx`
 - `backend/resources/js/pages/Foundation.test.tsx`
@@ -132,13 +150,16 @@ M00 through M03 repository files. Original references are preserved. Generated d
 - `backend/storage/framework/views/.gitignore`
 - `backend/storage/logs/.gitignore`
 - `backend/tests/Feature/ConfigurationSafetyTest.php`
+- `backend/tests/Feature/DatabaseErrorPrivacyTest.php`
 - `backend/tests/Feature/FoundationTest.php`
 - `backend/tests/Feature/ModuleManifestTest.php`
 - `backend/tests/Integration/M02TenancyTest.php`
 - `backend/tests/Integration/M03ModulesTest.php`
+- `backend/tests/Integration/M04CrmTest.php`
 - `backend/tests/Integration/PlatformServicesTest.php`
 - `backend/tests/Support/TenantContextProbeJob.php`
 - `backend/tests/Support/TenantIntegrationTest.php`
+- `backend/tests/Support/convert.php`
 - `backend/tests/Support/mutate.php`
 - `backend/tests/TestCase.php`
 - `backend/tests/Unit/ModuleBoundaryTest.php`
@@ -174,6 +195,7 @@ M00 through M03 repository files. Original references are preserved. Generated d
 - `docs/architecture/decisions/ADR-018.md`
 - `docs/architecture/decisions/ADR-019.md`
 - `docs/architecture/decisions/ADR-020.md`
+- `docs/architecture/decisions/ADR-021.md`
 - `docs/engineering/FILE_INVENTORY.md`
 - `docs/engineering/LOCAL_SETUP.md`
 - `docs/engineering/M00_REPORT.md`
@@ -184,6 +206,9 @@ M00 through M03 repository files. Original references are preserved. Generated d
 - `docs/engineering/M03_REPORT.md`
 - `docs/engineering/M03_SETUP.md`
 - `docs/engineering/M03_SPEC.md`
+- `docs/engineering/M04_REPORT.md`
+- `docs/engineering/M04_SETUP.md`
+- `docs/engineering/M04_SPEC.md`
 - `docs/engineering/MILESTONES.md`
 - `docs/engineering/TEST_STRATEGY.md`
 - `docs/modules/MODULE_CATALOG.md`

@@ -66,6 +66,7 @@ final class TenantContext
         return match ($permission) {
             'organization.view' => in_array($this->role(), ['owner', 'administrator', 'auditor', 'member'], true),
             'organization.manage' => $this->privileged() && $this->mfaConfirmed,
+            'crm.manage' => ($this->privileged() && $this->mfaConfirmed) || $this->role() === 'member',
             'memberships.manage' => $this->role() === 'owner' && $this->mfaConfirmed,
             'audit.view' => in_array($this->role(), ['owner', 'administrator', 'auditor'], true),
             default => false,

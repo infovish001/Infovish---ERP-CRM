@@ -1,3 +1,3 @@
 <?php
 
-return ['framework_major' => 1, 'bundled' => ['Parties', 'Catalog']];
+return ['framework_major' => 1, 'bundled' => ['Parties', 'Catalog', 'CRM']];

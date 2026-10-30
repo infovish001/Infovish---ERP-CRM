@@ -40,7 +40,7 @@ Artisan::command('platform:tenant-state {slug} {status}', function () {
     abort_unless(in_array($this->argument('status'), ['active', 'suspended'], true), 422, 'Choose active or suspended.');
     DB::connection('provisioner')->transaction(function () {
         $tenant = DB::connection('provisioner')->table('tenants')->where('slug', $this->argument('slug'))->lockForUpdate()->first();
-        abort_unless($tenant && in_array($tenant->schema_version, [1, 2], true) && in_array($tenant->status, ['active', 'suspended'], true), 422);
+        abort_unless($tenant && in_array($tenant->schema_version, [1, 2, 3], true) && in_array($tenant->status, ['active', 'suspended'], true), 422);
         if ($tenant->status === $this->argument('status')) {
             return;
         }
@@ -97,7 +97,7 @@ Artisan::command('platform:module-entitlement {slug} {module} {allowed}', functi
 Artisan::command('platform:outbox-dispatch {slug} {actor-email} {--queue=default}', function () {
     $tenant = DB::connection('pgsql')->table('tenants')->where('slug', $this->argument('slug'))->first();
     $actor = User::where('email', strtolower($this->argument('actor-email')))->where('active', true)->first();
-    abort_unless($tenant && $tenant->schema_version === 2 && $actor, 422);
+    abort_unless($tenant && $tenant->schema_version >= 2 && $actor, 422);
     $count = app(TenantExecution::class)->run($tenant->id, $actor->id, fn () => app(Outbox::class)->dispatch($this->option('queue')));
     $this->info('Published '.$count.' durable events; tenant context cleared.');
 })->purpose('Publish one bounded outbox batch under a current authorized tenant actor');

@@ -11,7 +11,7 @@ class ModuleManifestTest extends TestCase
 {
     public function test_bundled_manifests_and_contract_bindings_are_valid(): void
     {
-        $this->assertSame(['Parties', 'Catalog'], array_keys(app(ModuleRegistry::class)->manifests()));
+        $this->assertSame(['Parties', 'Catalog', 'CRM'], array_keys(app(ModuleRegistry::class)->manifests()));
         $this->assertInstanceOf(Contacts::class, app(Contacts::class));
         $this->assertInstanceOf(Products::class, app(Products::class));
     }

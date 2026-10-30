@@ -6,11 +6,13 @@ export default function WorkspaceLayout({
     tenant,
     user,
     children,
+    section = 'master-data',
 }: {
     title: string;
     tenant: string;
     user: string;
     children: ReactNode;
+    section?: 'master-data' | 'crm';
 }) {
     const [dark, setDark] = useState(false);
     const [menu, setMenu] = useState(false);
@@ -37,8 +39,19 @@ export default function WorkspaceLayout({
                 <p className="nav-label">WORKSPACE</p>
                 <nav className="workspace-nav">
                     <Link href="/workspace">Organization</Link>
-                    <Link href="/workspace/master-data" className="nav-active" aria-current="page">
+                    <Link
+                        href="/workspace/master-data"
+                        className={section === 'master-data' ? 'nav-active' : ''}
+                        aria-current={section === 'master-data' ? 'page' : undefined}
+                    >
                         Contacts &amp; catalog
+                    </Link>
+                    <Link
+                        href="/workspace/crm"
+                        className={section === 'crm' ? 'nav-active' : ''}
+                        aria-current={section === 'crm' ? 'page' : undefined}
+                    >
+                        CRM
                     </Link>
                     <Link href="/account/security">Account security</Link>
                 </nav>

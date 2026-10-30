@@ -871,12 +871,18 @@ export default function MasterData({
                         <div className="module-row" key={module.name}>
                             <div>
                                 <h3>
-                                    {module.name === 'Parties' ? 'Contacts' : 'Products & services'}
+                                    {module.name === 'CRM'
+                                        ? 'CRM'
+                                        : module.name === 'Parties'
+                                          ? 'Contacts'
+                                          : 'Products & services'}
                                 </h3>
                                 <p>
-                                    {module.name === 'Parties'
-                                        ? 'A shared directory for customer and supplier identities.'
-                                        : 'Product definitions, variants and explicit list prices.'}
+                                    {module.name === 'CRM'
+                                        ? 'Leads, pipelines, opportunities and activities.'
+                                        : module.name === 'Parties'
+                                          ? 'A shared directory for customer and supplier identities.'
+                                          : 'Product definitions, variants and explicit list prices.'}
                                 </p>
                                 <small>
                                     Version {module.installed_version ?? 'not installed'}
