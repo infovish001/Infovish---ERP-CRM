@@ -22,3 +22,5 @@ Compatibility is checked in two stages: upstream supported constraints at M00, a
 Local inventory: Windows 10.0.26340 x64; Git 2.55.0.windows.3. PHP initially lacks pdo_pgsql, fileinfo and zip; configure project-local INI or use Docker without changing system PHP settings. No existing code or Git repository was present. Package registry queries require network escalation in this sandbox.
 
 Resolved verification baseline: Laravel 13.39.0; Inertia Laravel 3.5.2; Predis 3.7.0; React 19.3.1; Inertia React 3.9.1; TypeScript 6.0.3; ESLint 10.13.0; typescript-eslint 8.72.1; Vite 8.3.5; Tailwind 4.3.3; Vitest 5.0.5. Selected ESLint 10 after npm flagged 9 as unsupported. Exact lockfiles and successful checks are documented in M01_REPORT.md.
+
+M02 adds Laravel Fortify 1.41.0 for official session authentication, password confirmation and TOTP/recovery flows, verified against Laravel 13 by Composer resolution and executable integration tests. Registration, mail-dependent recovery and passkeys are disabled. See [ADR-019](decisions/ADR-019.md) and [M02 report](../engineering/M02_REPORT.md) for implemented boundaries and evidence.

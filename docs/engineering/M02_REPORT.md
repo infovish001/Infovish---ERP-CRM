@@ -1,6 +1,8 @@
 # M02 implementation and verification report
 
-Status: IN PROGRESS pending hosted CI verification. Authorized by the user's continuation after M01 review. M03 is not authorized or implemented.
+Status: PASS. Authorized by the user's continuation after M01 review. M03 is not authorized or implemented.
+
+Implementation commit: `2fd6e32c2f39605a0a15fa54d070f29235369016`. [Hosted verification run](https://github.com/infovish001/Infovish---ERP-CRM/actions/runs/41005766040) completed successfully for both foundation and repository-history secret scanning jobs on 2026-10-30. This report-only finalization records that observed result; it does not change executable code.
 
 ## Delivered scope
 
@@ -21,8 +23,10 @@ The React interface extends the supplied Figma reference's observed colors and s
 | npm audit | PASS: zero vulnerabilities |
 | Docker build/start and complete container suite | PASS: all four services healthy; 30 tests, 193 assertions on PHP 8.5.12; app/worker persistent environments contain no provisioning variables |
 | Module boundary / Composer validation and audit / secret scan | PASS: zero business-module boundary violations; valid manifest; no Composer advisories; Gitleaks 8.30.1 includable-source scan found no secrets |
-| Hosted GitHub Actions | Pending publication |
+| Hosted GitHub Actions | PASS: foundation checks, restricted-runtime backend regression, frontend checks, dependency audits and Gitleaks repository-history scan; linked run above |
 | Local sign-in visual inspection | PASS: organization name, labeled fields and sign-in action render |
+
+Host commands: `scripts/platform-local.ps1 Test`; PHP `vendor/bin/pint --test`, `vendor/bin/phpstan analyse --memory-limit=512M`, `tools/check-boundaries.php`; Composer `validate --strict` and `audit --locked`; npm `run typecheck`, `run lint`, `test`, `run build`, `audit --audit-level=high`; Node `tools/check-api.mjs`; Gitleaks `dir` over Git-includable source. Docker build used the documented verified Google registry cache, then `compose up --wait`; a one-off test process received administrator fixture credentials plus a separately restricted test application role. HTTP probes returned ready=200, registered tenant login=200 and unknown host=404. Older host previews were stopped after the Docker application became healthy.
 
 Integration coverage includes actual PostgreSQL tenant databases/roles, repeated provisioning, credential privilege denial, matching record IDs in different tenants, unknown hosts, forged IDs, inactive user/membership, suspended lifecycle, cross-host MFA challenges, session-version revocation, MFA enrollment/challenge/one-use recovery, protection against forced secret replacement, password changes, permission/grant checks, real CSRF, scoped audit visibility, database audit immutability, connection identity mismatch, private file/cache namespaces, exception cleanup and two tenants consumed by one real Redis worker. Last-owner mutations use a per-tenant transaction advisory lock; this suite tests the invariant but does not claim a sustained concurrency/load benchmark.
 
