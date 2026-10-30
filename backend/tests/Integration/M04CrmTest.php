@@ -322,9 +322,12 @@ class M04CrmTest extends TenantIntegrationTest
         $config['database'] = $row->database_name;
         config(['database.connections.crm_upgrade' => $config]);
         $db = DB::connection('crm_upgrade');
-        foreach (['crm_history', 'crm_activities', 'crm_opportunities', 'crm_leads', 'crm_stages', 'crm_pipelines'] as $table) {
+        $db->statement('ALTER TABLE sales_quotes DROP CONSTRAINT sales_quotes_order_fk');
+        foreach (['sales_history', 'sales_orders', 'sales_quotes', 'sales_tax_profiles', 'crm_history', 'crm_activities', 'crm_opportunities', 'crm_leads', 'crm_stages', 'crm_pipelines'] as $table) {
             $db->getSchemaBuilder()->drop($table);
         }
+        $db->statement('DROP FUNCTION guard_sales_quote()');
+        $db->table('migrations')->where('migration', '2026_10_30_100004_create_sales')->delete();
         $db->table('migrations')->where('migration', '2026_10_30_100003_create_crm')->delete();
         $db->table('module_installations')->where('module', 'CRM')->delete();
         DB::purge('crm_upgrade');

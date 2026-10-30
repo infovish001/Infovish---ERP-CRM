@@ -14,6 +14,14 @@ use Illuminate\Support\Str;
 
 final class OpportunityService implements Opportunities
 {
+    /** @return list<OpportunityData> */
+    public function openForCustomer(string $companyId, string $customerId): array
+    {
+        Validator::make(['customer' => $customerId], ['customer' => 'uuid'])->validate();
+
+        return app(CrmAccess::class)->records('opportunity', $companyId)->where('contact_id', $customerId)->where('status', 'open')->orderByDesc('updated_at')->limit(25)->get()->map(fn ($row) => new OpportunityData($row->id, $companyId, $row->number, $row->contact_id, $row->title, $row->status, $row->expected_amount, $row->currency))->all();
+    }
+
     public function find(string $companyId, string $id): OpportunityData
     {
         $row = app(CrmAccess::class)->record('opportunity', $companyId, $id);

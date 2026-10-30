@@ -9,6 +9,7 @@ import Security from './pages/Security';
 import Workspace from './pages/Workspace';
 import MasterData from './pages/MasterData';
 import CRM from './pages/CRM';
+import Sales from './pages/Sales';
 const pages = {
     Foundation,
     Login,
@@ -18,6 +19,7 @@ const pages = {
     Workspace,
     MasterData,
     CRM,
+    Sales,
 };
 void createInertiaApp({
     title: (title) => `${title} · Infovish ERP`,

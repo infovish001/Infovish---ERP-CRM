@@ -178,6 +178,7 @@ export default function Workspace({
                 <nav className="workspace-nav">
                     <Link href="/workspace/master-data">Contacts &amp; catalog</Link>
                     <Link href="/workspace/crm">CRM</Link>
+                    <Link href="/workspace/sales">Sales</Link>
                     <button
                         className={tab === 'organization' ? 'nav-active' : ''}
                         onClick={() => setTab('organization')}

@@ -18,6 +18,17 @@ use Illuminate\Validation\ValidationException;
 
 final class ProductService implements Products
 {
+    /** @return list<ProductData> */
+    public function available(string $companyId, string $search = ''): array
+    {
+        app(ModuleAccess::class)->require('Catalog');
+        app(CompanyScope::class)->verify($companyId);
+        Validator::make(['q' => $search], ['q' => 'string|max:100'])->validate();
+
+        return DB::connection('tenant')->table('catalog_variants as v')->join('catalog_products as p', 'p.id', '=', 'v.product_id')->where('v.company_id', $companyId)->where('v.active', true)->where('p.active', true)
+            ->where(fn ($q) => $q->where('v.name', 'ilike', '%'.$search.'%')->orWhere('v.sku', 'ilike', '%'.$search.'%'))->orderBy('v.sku')->limit(25)->get(['v.*', 'p.unit', 'p.type'])->map(fn ($v) => new ProductData($v->id, $v->product_id, $companyId, $v->sku, $v->name, $v->type, $v->unit, $v->list_price, $v->currency))->all();
+    }
+
     public function find(string $companyId, string $variantId): ProductData
     {
         app(ModuleAccess::class)->require('Catalog');

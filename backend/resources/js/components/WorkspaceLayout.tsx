@@ -12,7 +12,7 @@ export default function WorkspaceLayout({
     tenant: string;
     user: string;
     children: ReactNode;
-    section?: 'master-data' | 'crm';
+    section?: 'master-data' | 'crm' | 'sales';
 }) {
     const [dark, setDark] = useState(false);
     const [menu, setMenu] = useState(false);
@@ -52,6 +52,13 @@ export default function WorkspaceLayout({
                         aria-current={section === 'crm' ? 'page' : undefined}
                     >
                         CRM
+                    </Link>
+                    <Link
+                        href="/workspace/sales"
+                        className={section === 'sales' ? 'nav-active' : ''}
+                        aria-current={section === 'sales' ? 'page' : undefined}
+                    >
+                        Sales
                     </Link>
                     <Link href="/account/security">Account security</Link>
                 </nav>

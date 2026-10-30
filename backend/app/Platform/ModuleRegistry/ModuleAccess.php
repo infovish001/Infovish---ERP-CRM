@@ -12,7 +12,7 @@ final class ModuleAccess
     {
         $tenant = app(TenantContext::class)->requireTenantId();
         $definition = app(ModuleRegistry::class)->manifests()[$module] ?? null;
-        if (! $definition || ! in_array(DB::connection('pgsql')->table('tenants')->where('id', $tenant)->value('schema_version'), range($definition['min_schema'], 3), true)) {
+        if (! $definition || ! in_array(DB::connection('pgsql')->table('tenants')->where('id', $tenant)->value('schema_version'), range($definition['min_schema'], TenantSchema::VERSION), true)) {
             return false;
         }
 

@@ -10,7 +10,7 @@ use RuntimeException;
 
 final class TenantSchema
 {
-    public const VERSION = 3;
+    public const VERSION = 4;
 
     public function install(string $connection, string $tenantId, string $role): void
     {
@@ -37,6 +37,8 @@ final class TenantSchema
         $db->statement('GRANT UPDATE (enabled, updated_at) ON module_installations TO "'.$role.'"');
         $db->statement('GRANT SELECT, INSERT, UPDATE, DELETE ON companies, branches, departments, document_counters, idempotency_records, event_outbox, event_receipts, parties_contacts, catalog_products, catalog_variants TO "'.$role.'"');
         $db->statement('GRANT SELECT, INSERT, UPDATE, DELETE ON crm_pipelines, crm_stages, crm_leads, crm_opportunities, crm_activities TO "'.$role.'"');
+        $db->statement('GRANT SELECT, INSERT, UPDATE ON sales_tax_profiles, sales_quotes TO "'.$role.'"');
+        $db->statement('GRANT SELECT, INSERT ON sales_orders, sales_history TO "'.$role.'"');
         $db->statement('GRANT SELECT, INSERT ON crm_history TO "'.$role.'"');
     }
 

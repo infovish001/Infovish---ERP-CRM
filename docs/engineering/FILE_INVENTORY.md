@@ -1,6 +1,6 @@
 # File inventory
 
-M00 through M04 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
+M00 through M05 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
 
 - `.dockerignore`
 - `.gitattributes`
@@ -51,6 +51,16 @@ M00 through M04 repository files. Original references are preserved. Generated d
 - `backend/app/Modules/Parties/README.md`
 - `backend/app/Modules/Parties/module.json`
 - `backend/app/Modules/README.md`
+- `backend/app/Modules/Sales/Application/Pricing.php`
+- `backend/app/Modules/Sales/Application/SalesAccess.php`
+- `backend/app/Modules/Sales/Application/SalesService.php`
+- `backend/app/Modules/Sales/Application/TaxProfile.php`
+- `backend/app/Modules/Sales/Domain/Contracts/OrderData.php`
+- `backend/app/Modules/Sales/Domain/Contracts/Orders.php`
+- `backend/app/Modules/Sales/Infrastructure/Migrations/2026_10_30_100004_create_sales.php`
+- `backend/app/Modules/Sales/Presentation/SalesController.php`
+- `backend/app/Modules/Sales/README.md`
+- `backend/app/Modules/Sales/module.json`
 - `backend/app/Platform/Identity/MembershipService.php`
 - `backend/app/Platform/Identity/User.php`
 - `backend/app/Platform/ModuleRegistry/ModuleAccess.php`
@@ -122,6 +132,9 @@ M00 through M04 repository files. Original references are preserved. Generated d
 - `backend/resources/js/features/crm/Forms.tsx`
 - `backend/resources/js/features/crm/RecordDetail.tsx`
 - `backend/resources/js/features/crm/types.ts`
+- `backend/resources/js/features/sales/ProfileEditor.tsx`
+- `backend/resources/js/features/sales/QuoteEditor.tsx`
+- `backend/resources/js/features/sales/types.ts`
 - `backend/resources/js/lib/request.ts`
 - `backend/resources/js/pages/CRM.test.tsx`
 - `backend/resources/js/pages/CRM.tsx`
@@ -132,10 +145,13 @@ M00 through M04 repository files. Original references are preserved. Generated d
 - `backend/resources/js/pages/Login.tsx`
 - `backend/resources/js/pages/MasterData.test.tsx`
 - `backend/resources/js/pages/MasterData.tsx`
+- `backend/resources/js/pages/Sales.test.tsx`
+- `backend/resources/js/pages/Sales.tsx`
 - `backend/resources/js/pages/Security.tsx`
 - `backend/resources/js/pages/Workspace.test.tsx`
 - `backend/resources/js/pages/Workspace.tsx`
 - `backend/resources/views/app.blade.php`
+- `backend/resources/views/sales/document.blade.php`
 - `backend/routes/console.php`
 - `backend/routes/platform-console.php`
 - `backend/routes/web.php`
@@ -156,9 +172,11 @@ M00 through M04 repository files. Original references are preserved. Generated d
 - `backend/tests/Integration/M02TenancyTest.php`
 - `backend/tests/Integration/M03ModulesTest.php`
 - `backend/tests/Integration/M04CrmTest.php`
+- `backend/tests/Integration/M05SalesTest.php`
 - `backend/tests/Integration/PlatformServicesTest.php`
 - `backend/tests/Support/TenantContextProbeJob.php`
 - `backend/tests/Support/TenantIntegrationTest.php`
+- `backend/tests/Support/confirm-order.php`
 - `backend/tests/Support/convert.php`
 - `backend/tests/Support/mutate.php`
 - `backend/tests/TestCase.php`
@@ -196,6 +214,7 @@ M00 through M04 repository files. Original references are preserved. Generated d
 - `docs/architecture/decisions/ADR-019.md`
 - `docs/architecture/decisions/ADR-020.md`
 - `docs/architecture/decisions/ADR-021.md`
+- `docs/architecture/decisions/ADR-022.md`
 - `docs/engineering/FILE_INVENTORY.md`
 - `docs/engineering/LOCAL_SETUP.md`
 - `docs/engineering/M00_REPORT.md`
@@ -209,7 +228,12 @@ M00 through M04 repository files. Original references are preserved. Generated d
 - `docs/engineering/M04_REPORT.md`
 - `docs/engineering/M04_SETUP.md`
 - `docs/engineering/M04_SPEC.md`
+- `docs/engineering/M05_REPORT.md`
+- `docs/engineering/M05_SETUP.md`
+- `docs/engineering/M05_SPEC.md`
 - `docs/engineering/MILESTONES.md`
+- `docs/engineering/R1_RELEASE_GATES.md`
+- `docs/engineering/SRI_LANKA_TAX_RULES.md`
 - `docs/engineering/TEST_STRATEGY.md`
 - `docs/modules/MODULE_CATALOG.md`
 - `docs/operations/DOCKER_WINDOWS_RECOVERY.md`

@@ -18,3 +18,9 @@
 - Verified the M01 engineering foundation, shell, probes, Docker app/worker build, live PostgreSQL/Redis/queue behavior, 11 backend tests and hosted CI.
 - Recovered Docker Desktop from stale runtime sockets without resetting volumes; documented a verified-image registry fallback and configurable local app port.
 - Separated Vitest from Laravel's development-server configuration and placed PHPUnit's cache in writable storage for non-root container tests.
+
+## M05 Sales baseline (unreleased)
+
+- Source-versioned ordinary Sri Lanka VAT profiles and explicit classifications; exact decimal pricing and immutable quotation/order snapshots.
+- Privileged draft/issue/cancel/atomic quote-to-order flow, retry/concurrency protection, company-scoped reads and authenticated fixed-template PDFs.
+- Schema 4 additive upgrades, public DTO lookups/Orders contract, isolation/security/lifecycle tests and explicit R1 release gate ledger. Finance, fulfillment and production release remain gated.

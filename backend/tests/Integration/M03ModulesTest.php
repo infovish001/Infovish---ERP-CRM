@@ -286,9 +286,12 @@ class M03ModulesTest extends TenantIntegrationTest
         $connection['database'] = $row->database_name;
         config(['database.connections.upgrade_fixture' => $connection]);
         $db = DB::connection('upgrade_fixture');
-        foreach (['crm_history', 'crm_activities', 'crm_opportunities', 'crm_leads', 'crm_stages', 'crm_pipelines', 'catalog_variants', 'catalog_products', 'parties_contacts', 'event_receipts', 'event_outbox', 'idempotency_records', 'document_counters', 'module_installations'] as $table) {
+        $db->statement('ALTER TABLE sales_quotes DROP CONSTRAINT sales_quotes_order_fk');
+        foreach (['sales_history', 'sales_orders', 'sales_quotes', 'sales_tax_profiles', 'crm_history', 'crm_activities', 'crm_opportunities', 'crm_leads', 'crm_stages', 'crm_pipelines', 'catalog_variants', 'catalog_products', 'parties_contacts', 'event_receipts', 'event_outbox', 'idempotency_records', 'document_counters', 'module_installations'] as $table) {
             $db->getSchemaBuilder()->drop($table);
         }
+        $db->statement('DROP FUNCTION guard_sales_quote()');
+        $db->table('migrations')->where('migration', '2026_10_30_100004_create_sales')->delete();
         $db->table('migrations')->whereIn('migration', ['2026_10_30_100003_create_crm', '2026_10_30_000002_create_shared_module_services', '2026_10_30_100001_create_parties', '2026_10_30_100002_create_catalog'])->delete();
         DB::purge('upgrade_fixture');
         DB::connection('provisioner')->table('tenants')->where('id', $this->a)->update(['schema_version' => 1]);

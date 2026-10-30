@@ -8,7 +8,7 @@ final class Numbering
 {
     public function next(string $company, string $series): string
     {
-        if (! in_array($series, ['CON', 'PRD', 'LED', 'OPP'], true)) {
+        if (! in_array($series, ['CON', 'PRD', 'LED', 'OPP', 'QTN', 'SO'], true)) {
             throw new \InvalidArgumentException('Unsupported number series.');
         }
         app(CompanyScope::class)->verify($company);

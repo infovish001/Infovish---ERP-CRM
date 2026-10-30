@@ -3,6 +3,7 @@
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\WorkspaceController;
 use App\Modules\CRM\Presentation\CrmController;
+use App\Modules\Sales\Presentation\SalesController;
 use App\Shared\Health\Readiness;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,6 +28,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/security', [WorkspaceController::class, 'security']);
     Route::put('/account/password', [WorkspaceController::class, 'password']);
     Route::middleware('privileged-mfa')->group(function () {
+        Route::get('/workspace/sales', [SalesController::class, 'page']);
+        Route::prefix('api/v1/sales')->middleware('throttle:120,1')->controller(SalesController::class)->group(function () {
+            Route::get('setup', 'setup');
+            Route::put('tax-profile', 'profile');
+            foreach (['quotations' => 'quote', 'orders' => 'order'] as $path => $kind) {
+                Route::get($path, 'index')->name('sales.'.$kind.'.list');
+                Route::get($path.'/{id}', 'detail')->whereUuid('id')->name('sales.'.$kind.'.detail');
+                Route::get($path.'/{id}/pdf', 'pdf')->whereUuid('id')->name('sales.'.$kind.'.pdf');
+            }
+            Route::post('quotations', 'save');
+            Route::put('quotations/{id}', 'save')->whereUuid('id');
+            Route::post('quotations/{id}/transition', 'transition')->whereUuid('id');
+            Route::post('quotations/{id}/convert', 'convert')->whereUuid('id');
+        });
         Route::get('/workspace/crm', [CrmController::class, 'page']);
         Route::prefix('api/v1/crm')->middleware('throttle:120,1')->controller(CrmController::class)->group(function () {
             Route::get('setup', 'setup');
@@ -50,7 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/workspace/master-data', [MasterDataController::class, 'page']);
         Route::prefix('api/v1')->middleware('throttle:120,1')->controller(MasterDataController::class)->group(function () {
             Route::get('modules', 'modules');
-            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog', 'CRM']);
+            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog', 'CRM', 'Sales']);
             Route::get('contacts', 'contacts');
             Route::post('contacts', 'saveContact');
             Route::put('contacts/{id}', 'saveContact')->whereUuid('id');

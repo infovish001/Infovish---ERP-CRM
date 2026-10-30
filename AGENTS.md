@@ -2,7 +2,7 @@
 
 Read the PRD, SAD, architecture decisions, traceability and current milestone specification before work. Original references are in `References/`; searchable transcriptions are in `docs/requirements/`.
 
-Implement only the authorized milestone. M00 through M04 passed; M04 evidence is in `docs/engineering/M04_REPORT.md`. Stop before M05 and obtain explicit authorization for every subsequent milestone. Stop at milestone boundaries unless continuation was explicitly authorized.
+Implement only the authorized milestone. M00 through M04 passed. The user's continuation after M04 authorizes M05, specified in `docs/engineering/M05_SPEC.md`, including internet-sourced Sri Lankan tax rules. Stop before M06 and obtain explicit authorization for every subsequent milestone. Stop at milestone boundaries unless continuation was explicitly authorized.
 
 Preserve tenant and module boundaries. Resolve tenant identity from trusted routing and authenticated membership; never trust a client tenant ID. Authorize protected operations server-side. Never modify another module's private tables; use public contracts or versioned events.
 

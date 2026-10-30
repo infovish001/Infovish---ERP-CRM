@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: Infovish platform, master data and CRM API
-  version: 0.4.0
+  title: Infovish platform, CRM and Sales API
+  version: 0.5.0
   description: >-
     M02 session-authenticated organization APIs run on an exact registered tenant host. Sign in through Fortify,
     complete MFA when enrolled, and provide the host-bound session cookie. Mutations require the page's CSRF token.
@@ -12,7 +12,10 @@ info:
     minute per authenticated actor. List endpoints return 25 records per page. Decimal list prices are strings in
     company base currency; no tax, discount or currency conversion is performed. M04 CRM depends on Parties and tenant
     schema 3. Members read/write assigned records in granted companies; auditors read granted companies; privileged MFA
-    users configure pipelines, reassign, convert and reopen. No Sales orders or external communications are created.
+    users configure pipelines, reassign, convert and reopen. No Sales orders or external communications are created. M05
+    Sales requires schema 4 and Parties/Catalog/CRM. Privileged MFA mutations; company-granted member/auditor reads.
+    Ordinary LK VAT profiles and explicit classifications; commercial PDFs are not tax invoices. No
+    fulfillment/accounting effects.
 paths:
   /login:
     post:
@@ -692,6 +695,7 @@ paths:
               - Parties
               - Catalog
               - CRM
+              - Sales
         - $ref: '#/components/parameters/Csrf'
       responses:
         '200':
@@ -1897,6 +1901,619 @@ paths:
                 revision:
                   type: integer
                   minimum: 1
+  /api/v1/sales/quotations:
+    get:
+      operationId: listSalesQuote
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+        - name: status
+          in: query
+          schema:
+            enum:
+              - draft
+              - issued
+              - cancelled
+              - converted
+              - confirmed
+      responses:
+        '200':
+          description: 25 authorized company records per page.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesDocument'
+                  total:
+                    type: integer
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+    post:
+      operationId: createSalesQuote
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Stable resource UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                required:
+                  - id
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesQuoteInput'
+  /api/v1/sales/quotations/{id}:
+    get:
+      operationId: getSalesQuote
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - $ref: '#/components/parameters/RecordId'
+      responses:
+        '200':
+          description: Snapshot detail and latest 100 immutable history entries; earlier rows remain stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  record:
+                    $ref: '#/components/schemas/SalesDocument'
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesHistory'
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+    put:
+      operationId: updateDraftSalesQuote
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Stable resource UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                required:
+                  - id
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/SalesQuoteInput'
+                - required:
+                    - revision
+  /api/v1/sales/quotations/{id}/pdf:
+    get:
+      operationId: downloadSalesQuotePdf
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - $ref: '#/components/parameters/RecordId'
+      responses:
+        '200':
+          description: Authenticated, no-store fixed-template PDF from stored snapshot; draft clearly labeled; not a tax invoice.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+  /api/v1/sales/orders:
+    get:
+      operationId: listSalesOrder
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+        - name: status
+          in: query
+          schema:
+            enum:
+              - draft
+              - issued
+              - cancelled
+              - converted
+              - confirmed
+      responses:
+        '200':
+          description: 25 authorized company records per page.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesDocument'
+                  total:
+                    type: integer
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+  /api/v1/sales/orders/{id}:
+    get:
+      operationId: getSalesOrder
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - $ref: '#/components/parameters/RecordId'
+      responses:
+        '200':
+          description: Snapshot detail and latest 100 immutable history entries; earlier rows remain stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  record:
+                    $ref: '#/components/schemas/SalesDocument'
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesHistory'
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+  /api/v1/sales/orders/{id}/pdf:
+    get:
+      operationId: downloadSalesOrderPdf
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - $ref: '#/components/parameters/RecordId'
+      responses:
+        '200':
+          description: Authenticated, no-store fixed-template PDF from stored snapshot; draft clearly labeled; not a tax invoice.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+  /api/v1/sales/quotations/{id}/transition:
+    post:
+      operationId: transitionSalesQuote
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Stable resource UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                required:
+                  - id
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - revision
+                - action
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                revision:
+                  type: integer
+                  minimum: 1
+                action:
+                  enum:
+                    - issue
+                    - cancel
+                reason:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 500
+              description: >-
+                Issue freezes content and records internal issuance only (no sending). Cancellation requires reason.
+                Current profile and active references validated on issue.
+  /api/v1/sales/quotations/{id}/convert:
+    post:
+      operationId: confirmOrderFromQuote
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '200':
+          description: Stable resource UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                required:
+                  - id
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                revision:
+                  type: integer
+                  minimum: 1
+              description: >-
+                Unexpired current issued quote creates exactly one confirmed order atomically with permanent quote link,
+                counters, history, audit/outbox and idempotency. Same issued revision with another key returns original
+                order; different revision or intent conflicts. No repricing, invoice or inventory operation.
+  /api/v1/sales/tax-profile:
+    put:
+      operationId: saveSalesTaxProfile
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Stable resource UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                required:
+                  - id
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesProfile'
+  /api/v1/sales/setup:
+    get:
+      operationId: salesSetup
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: customer_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: >-
+            Profile and up to 25 active customer/product choices matching q, optional up to 25 authorized open customer
+            opportunities through public contracts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    anyOf:
+                      - $ref: '#/components/schemas/SalesProfile'
+                      - type: 'null'
+                  customers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        number:
+                          type: string
+                          maxLength: 30
+                        name:
+                          type: string
+                          maxLength: 160
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        productId:
+                          type: string
+                          format: uuid
+                        companyId:
+                          type: string
+                          format: uuid
+                        sku:
+                          type: string
+                          maxLength: 50
+                        name:
+                          type: string
+                          maxLength: 160
+                        type:
+                          type: string
+                          maxLength: 20
+                        unit:
+                          type: string
+                          maxLength: 30
+                        listPrice:
+                          type:
+                            - string
+                            - 'null'
+                        currency:
+                          type: string
+                          maxLength: 3
+                  opportunities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        number:
+                          type: string
+                          maxLength: 30
+                        title:
+                          type: string
+                          maxLength: 160
+                  rule_version:
+                    type: string
+        '401':
+          description: Tenant-bound authentication required.
+        '403':
+          description: Role/MFA/company/module/dependency/entitlement unavailable.
+        '404':
+          description: Resource unavailable in this authorized company/tenant.
+        '409':
+          description: Stale revision, expired/terminal quote, changed profile or conflicting retry.
+        '419':
+          description: CSRF verification failed.
+        '422':
+          description: Validation or unsupported tax/currency/active reference rule failed; field errors.
+        '429':
+          description: 120 requests per actor per minute.
 components:
   securitySchemes:
     session:
@@ -2165,6 +2782,7 @@ components:
             - Parties
             - Catalog
             - CRM
+            - Sales
         version:
           type: string
           maxLength: 20
@@ -2576,3 +3194,315 @@ components:
         - 'null'
       pattern: ^(0|[1-9][0-9]{0,13})(\.[0-9]{1,6})?$
       description: Optional nonnegative NUMERIC(20,6) CRM estimate returned as a six-place decimal string; null means unknown.
+    SalesLineInput:
+      type: object
+      additionalProperties: false
+      required:
+        - variant_id
+        - quantity
+        - unit_price
+        - discount_percent
+        - tax_code
+      properties:
+        variant_id:
+          type: string
+          format: uuid
+        quantity:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,13})(\.[0-9]{1,6})?$
+          description: Positive, six fractional places maximum.
+        unit_price:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,13})(\.[0-9]{1,6})?$
+          description: Explicit VAT-exclusive LKR decimal string. List prices are never substituted.
+        discount_percent:
+          type: string
+          description: 0..100, six fractional places maximum.
+        tax_code:
+          enum:
+            - standard
+            - zero
+            - exempt
+            - unregistered
+        tax_basis:
+          type:
+            - string
+            - 'null'
+          maxLength: 300
+          description: Required legal basis for zero/exempt treatment.
+    SalesProfile:
+      type: object
+      required:
+        - company_id
+        - country
+        - seller_name
+        - seller_address
+        - vat_registered
+        - revision
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        country:
+          enum:
+            - LK
+        seller_name:
+          type: string
+          maxLength: 160
+        seller_address:
+          type: string
+          maxLength: 500
+        vat_registered:
+          type: boolean
+        tin:
+          type:
+            - string
+            - 'null'
+          pattern: ^[0-9]{9}$
+        vat_registration:
+          type:
+            - string
+            - 'null'
+          maxLength: 30
+        vat_effective_from:
+          type:
+            - string
+            - 'null'
+          format: date
+        revision:
+          type: integer
+          minimum: 0
+      description: >-
+        LKR company only. Registration requires TIN, certificate number and effective date; unregistered status clears
+        them. Revisions block issue/conversion of older snapshots. No automatic applicability or SSCL/financial-services
+        calculator.
+    SalesQuoteInput:
+      type: object
+      required:
+        - company_id
+        - customer_id
+        - title
+        - issue_date
+        - valid_until
+        - lines
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        opportunity_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        title:
+          type: string
+          maxLength: 160
+        issue_date:
+          type: string
+          format: date
+          description: No future issue dates; ordinary VAT18 dates from 2024-01-01 and on/after seller registration.
+        valid_until:
+          type: string
+          format: date
+          description: On/after issue date. Issue/conversion also reject expired quotations.
+        terms:
+          type:
+            - string
+            - 'null'
+          maxLength: 4000
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/SalesLineInput'
+        revision:
+          type: integer
+          minimum: 1
+      description: >-
+        Draft save snapshots active customer/products, optional authorized open opportunity for that customer and
+        current Sales profile. Net lines round half-up to cents, VAT18 on the summed standard base once half-up to
+        cents; total is net+VAT. Six-place pricing inputs. Unsupported classification/currency/overflow rejected.
+    SalesLine:
+      allOf:
+        - $ref: '#/components/schemas/SalesLineInput'
+        - type: object
+          properties:
+            sku:
+              type: string
+              maxLength: 50
+            name:
+              type: string
+              maxLength: 160
+            unit:
+              type: string
+              maxLength: 30
+            type:
+              enum:
+                - product
+                - service
+            net:
+              type: string
+            vat_rate:
+              type: string
+    SalesSnapshot:
+      type: object
+      properties:
+        seller:
+          $ref: '#/components/schemas/SalesProfile'
+        customer:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+              maxLength: 30
+            name:
+              type: string
+              maxLength: 160
+        opportunity:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+              maxLength: 30
+            title:
+              type: string
+              maxLength: 160
+        pricing:
+          type: object
+          properties:
+            lines:
+              type: array
+              items:
+                $ref: '#/components/schemas/SalesLine'
+            net:
+              type: string
+            standard_base:
+              type: string
+            vat:
+              type: string
+            total:
+              type: string
+            rule_version:
+              enum:
+                - LK-VAT-2026-10-30
+            rounding:
+              type: string
+        title:
+          type: string
+          maxLength: 160
+        issue_date:
+          type: string
+          format: date
+        valid_until:
+          type: string
+          format: date
+        terms:
+          type:
+            - string
+            - 'null'
+        quotation_number:
+          type: string
+          maxLength: 30
+    SalesDocument:
+      type: object
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+          maxLength: 30
+        customer_id:
+          type: string
+          format: uuid
+        opportunity_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        title:
+          type: string
+          maxLength: 160
+        issue_date:
+          type: string
+          format: date
+        valid_until:
+          type: string
+          format: date
+        status:
+          enum:
+            - draft
+            - issued
+            - cancelled
+            - converted
+            - confirmed
+        currency:
+          enum:
+            - LKR
+        net:
+          type: string
+        vat:
+          type: string
+        total:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        order_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        quote_id:
+          type: string
+          format: uuid
+        confirmed_by:
+          type: string
+          format: uuid
+        confirmed_at:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/SalesSnapshot'
+      description: >-
+        List summaries omit snapshot and irrelevant quote/order-only fields. Details contain the immutable stored
+        snapshot. Order rows are insert/select only; issued quote contents and terminal records cannot be edited.
+    SalesHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        company_id:
+          type: string
+          format: uuid
+        quote_id:
+          type: string
+          format: uuid
+        actor_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        reason:
+          type:
+            - string
+            - 'null'
+        occurred_at:
+          type: string
+          format: date-time

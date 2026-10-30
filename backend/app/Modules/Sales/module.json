@@ -1,0 +1,1 @@
+{"name":"Sales","version":"1.0.0","framework_major":1,"min_schema":4,"dependencies":{"Parties":"^1.0","Catalog":"^1.0","CRM":"^1.0"},"contracts":["Orders","OrderData"],"migrations":"Infrastructure/Migrations"}
