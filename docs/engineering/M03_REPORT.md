@@ -1,10 +1,12 @@
 # M03 implementation and verification report
 
-Status: IN PROGRESS pending hosted CI. Host/container and authenticated HTTP/browser acceptance passed. Authorized by the user's continuation after M02 handoff on 2026-10-30. Stop before M04.
+Status: PASS. Authorized by the user's continuation after M02 handoff on 2026-10-30. Stop before M04.
+
+Implementation commit: `b35846a7487f39670f3955767cf5381aae5678aa`. [Hosted CI run](https://github.com/infovish001/Infovish---ERP-CRM/actions/runs/41026492486) passed both the application and repository-history secret scanning jobs. This final report update records observed verification; it changes no executable code.
 
 ## Delivered baseline and decisions
 
-The [M03 specification](M03_SPEC.md) refines PRD MOD/ORG, contacts/catalog dependencies, NFR-001/002/003/006/007/009/013 and DEP-001 through DEP-005/007; SAD sections 3â€“6/9. It does not claim entire grouped requirement ranges or commercial readiness. [ADR-020](../architecture/decisions/ADR-020.md) extends ADR-006 with a concrete bundled-module and transactional delivery baseline.
+The [M03 specification](M03_SPEC.md) refines PRD MOD/ORG, contacts/catalog dependencies, NFR-001/002/003/006/007/009/013 and DEP-001 through DEP-005/007; SAD sections 3-6/9. It does not claim entire grouped requirement ranges or commercial readiness. [ADR-020](../architecture/decisions/ADR-020.md) extends ADR-006 with a concrete bundled-module and transactional delivery baseline.
 
 Implemented two explicit allowlisted modules, Parties and Catalog, with version/framework/dependency/public-contract/migration manifests. Platform operator entitlements, installed tenant schema version, workspace activation and actor/company permissions independently gate access. Activation runs no DDL or uploaded code; deactivation preserves data. Operator upgrades lock, suspend, verify exact database identity before DDL, apply additive migrations/grants and record readiness only on success. Failed upgrades preserve data and remain suspended for review/retry. Existing schema-1 identity/organization remains supported until upgrade.
 
@@ -29,9 +31,11 @@ The React interface follows the observed Figma navy sidebar, compact header, pal
 | Final Docker build and isolated complete suite | PASS: 48 tests / 321 assertions on PHP 8.5.12; app/worker persistent environments have no provisioning variables. Final CSS build/start verified separately; no backend logic changed afterward |
 | Real HTTP cookie/MFA and authenticated browser workflows | PASS: real HTTP login/MFA/workspace=200 after the fix; browser recovery sign-in, contact/product/variant creation, exact prices, mobile navigation/dark theme and three actual worker-delivered events |
 | Local secret scan | PASS: Gitleaks 8.30.1 scanned all Git-includable source with no leaks |
-| Hosted CI and repository-history secret scan | Pending publication |
+| Hosted CI and repository-history secret scan | PASS: linked run above, including all backend/frontend/static/API/dependency checks and Gitleaks history scan |
 
 The real browser/HTTP test exposed a pre-existing session initialization order bug: Fortify can resolve its guard/store before tenant routing changes the configured cookie name, while ordinary authenticated routes resolve it afterward. The host resolver now also sets the already-created session store name and restores it in finally. A regression forces early store initialization and checks the issued host cookie. Array-backed feature authentication alone had not revealed this real HTTP cookie mismatch.
+
+Commands: `scripts/platform-local.ps1 Test` (full restricted-runtime backend suite), PHP Pint/PHPStan/boundary checks, Composer validate/audit, npm typecheck/lint/test/build/audit, Node OpenAPI validation, Gitleaks includable-source scan, Docker build/up, and the complete isolated container suite. Final local probes returned ready=200 and registered owner login=200. Disposable browser verification created one contact, one product and an additional variant; all three ID-only events became delivered through the actual running worker. That tenant/identity was then removed with exact guarded identifiers; the user's workspace remained intact. An earlier concurrent subprocess returned-output mismatch did not recur in five targeted repeats or final host/container/hosted runs; its diagnostic assertion remains to expose a recurrence instead of hiding it.
 
 Tests cover real PostgreSQL tenant roles/databases, included/denied entitlements, read-only activation/DDL metadata, activation dependencies, module revocation, company grants, duplicate IDs across tenants, create retries/conflicts, stale revisions, decimal rejection/precision, variants/SKU constraints, counter/event/idempotency rollback, concurrent subprocess mutations, actual schema-1 upgrade with preserved company data, identity-mismatch upgrade suspension, real Redis duplicate delivery, actor revocation, unknown event versions, bounded failures/replay and injected receipt-trigger database failure. Injected failure tests are not a claim of a production outage or full distributed fault-injection benchmark.
 
