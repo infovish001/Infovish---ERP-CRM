@@ -8,7 +8,7 @@
 | M03 | Module framework, shared services, catalog and contacts | Authorized after M02; verified in M03_REPORT; stop before M04 |
 | M04 | CRM | Authorized after M03; verified in M04_REPORT; stop before M05 |
 | M05 | Sales and first commercial release | Functional baseline verified in M05_REPORT; R1 release gates remain open; stop before M06 |
-| M06 | Finance and accounting | Authorized by continuation after M05; M06_SPEC defines scope, M06_REPORT records verification; stop before M07 |
+| M06 | Finance and accounting | Functional baseline verified in M06_REPORT; R1 gates remain open; stop before M07 |
 | M07 | Inventory and procurement | Future |
 | M08 | HR, projects, helpdesk, portals and documents | Future |
 | M09 | Email, WhatsApp, communications and automation | Future |

@@ -1,6 +1,6 @@
 # Infovish ERP and CRM
 
-Infovish Systems' incremental modular ERP platform. M00 through M05 functional baselines are verified. M06 adds the scoped LKR Finance ledger, invoice/bill posting, retained invoice PDFs, recorded payments, manual reconciliation and management reports. Current verification is recorded in the M06 report. R1 commercial release remains gated; Inventory and production deployment are future work.
+Infovish Systems' incremental modular ERP platform. M00 through M06 functional baselines are verified. M06 adds the scoped LKR Finance ledger, invoice/bill posting, retained invoice PDFs, recorded payments, manual reconciliation and management reports. Verification and limits are recorded in the M06 report. R1 commercial release remains gated; Inventory and production deployment are future work.
 
 Read [M00 report](docs/engineering/M00_REPORT.md), [architecture validation](docs/architecture/ARCHITECTURE_VALIDATION.md), [technology decisions](docs/architecture/TECHNOLOGY_DECISIONS.md) and [milestones](docs/engineering/MILESTONES.md). Original Word references remain in `References/`; complete paragraph/table-text transcriptions are in `docs/requirements/`. Embedded diagrams remain in the originals.
 

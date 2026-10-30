@@ -2,7 +2,7 @@
 
 Read the PRD, SAD, architecture decisions, traceability and current milestone specification before work. Original references are in `References/`; searchable transcriptions are in `docs/requirements/`.
 
-Implement only the authorized milestone. M00-M05 functional baselines are verified. The user continuation authorizes M06, scoped in `docs/engineering/M06_SPEC.md`; sourced Sri Lankan localization preferences persist. R1 release gates remain open. Stop before M07 and obtain explicit authorization for subsequent milestones.
+Implement only the authorized milestone. M00-M06 functional baselines are verified; Finance evidence and limits are in `docs/engineering/M06_REPORT.md`. Sourced Sri Lankan localization preferences persist. R1 release gates remain open. Stop before M07 and obtain explicit authorization for subsequent milestones.
 
 Preserve tenant and module boundaries. Resolve tenant identity from trusted routing and authenticated membership; never trust a client tenant ID. Authorize protected operations server-side. Never modify another module's private tables; use public contracts or versioned events.
 

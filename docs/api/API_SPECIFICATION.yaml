@@ -2566,13 +2566,18 @@ paths:
         - $ref: '#/components/parameters/Csrf'
         - $ref: '#/components/parameters/Idempotency'
       responses:
-        '200': &ref_0
+        '200':
           description: Authorized Finance result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinanceSaved'
-        '201': *ref_0
+        '201':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
         '401':
           description: Tenant-bound login required.
         '403':
@@ -2605,13 +2610,18 @@ paths:
         - $ref: '#/components/parameters/Csrf'
         - $ref: '#/components/parameters/Idempotency'
       responses:
-        '200': &ref_1
+        '200':
           description: Authorized Finance result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinanceSaved'
-        '201': *ref_1
+        '201':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
         '401':
           description: Tenant-bound login required.
         '403':
@@ -2644,13 +2654,18 @@ paths:
         - $ref: '#/components/parameters/Csrf'
         - $ref: '#/components/parameters/Idempotency'
       responses:
-        '200': &ref_2
+        '200':
           description: Authorized Finance result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinanceSaved'
-        '201': *ref_2
+        '201':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
         '401':
           description: Tenant-bound login required.
         '403':
@@ -2683,13 +2698,18 @@ paths:
         - $ref: '#/components/parameters/Csrf'
         - $ref: '#/components/parameters/Idempotency'
       responses:
-        '200': &ref_3
+        '200':
           description: Authorized Finance result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinanceSaved'
-        '201': *ref_3
+        '201':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
         '401':
           description: Tenant-bound login required.
         '403':
@@ -2722,13 +2742,18 @@ paths:
         - $ref: '#/components/parameters/Csrf'
         - $ref: '#/components/parameters/Idempotency'
       responses:
-        '200': &ref_4
+        '200':
           description: Authorized Finance result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinanceSaved'
-        '201': *ref_4
+        '201':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
         '401':
           description: Tenant-bound login required.
         '403':
@@ -2786,7 +2811,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FinanceAccountInput'
+              allOf:
+                - $ref: '#/components/schemas/FinanceAccountInput'
+                - type: object
+                  required:
+                    - revision
   /api/v1/finance/drafts/{id}:
     put:
       operationId: financeDraftUpdate
@@ -2824,7 +2853,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FinanceDraftInput'
+              allOf:
+                - $ref: '#/components/schemas/FinanceDraftInput'
+                - type: object
+                  required:
+                    - revision
   /api/v1/finance/statements/{id}:
     put:
       operationId: financeStatementUpdate
@@ -2862,7 +2895,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FinanceStatementInput'
+              allOf:
+                - $ref: '#/components/schemas/FinanceStatementInput'
+                - type: object
+                  required:
+                    - revision
   /api/v1/finance/periods/{id}/lock:
     put:
       operationId: financeLockUpdate
@@ -2960,13 +2997,18 @@ paths:
         - $ref: '#/components/parameters/Csrf'
         - $ref: '#/components/parameters/Idempotency'
       responses:
-        '200': &ref_5
+        '200':
           description: Authorized Finance result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinanceSaved'
-        '201': *ref_5
+        '201':
+          description: Authorized Finance result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSaved'
         '401':
           description: Tenant-bound login required.
         '403':
@@ -3036,9 +3078,13 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: '#/components/schemas/FinanceInvoiceInput'
-                - $ref: '#/components/schemas/FinanceBillInput'
+              allOf:
+                - oneOf:
+                    - $ref: '#/components/schemas/FinanceInvoiceInput'
+                    - $ref: '#/components/schemas/FinanceBillInput'
+                - type: object
+                  required:
+                    - revision
   /api/v1/finance/drafts/{id}/post:
     post:
       operationId: financePostDraft
@@ -3322,18 +3368,18 @@ paths:
         strings. No external transfer.
       parameters:
         - $ref: '#/components/parameters/Company'
-        - &ref_7
-          name: from
+        - name: from
           in: query
           required: true
-          schema: &ref_6
+          schema:
             type: string
             format: date
-        - &ref_8
-          name: to
+        - name: to
           in: query
           required: true
-          schema: *ref_6
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Authorized Finance result.
@@ -3368,11 +3414,21 @@ paths:
         - name: account_id
           in: query
           required: true
-          schema: &ref_9
+          schema:
             type: string
             format: uuid
-        - *ref_7
-        - *ref_8
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
         - name: page
           in: query
           required: false
@@ -3414,11 +3470,15 @@ paths:
         - name: account_id
           in: query
           required: true
-          schema: *ref_9
+          schema:
+            type: string
+            format: uuid
         - name: as_of
           in: query
           required: true
-          schema: *ref_6
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Authorized Finance result.
@@ -4554,7 +4614,7 @@ components:
         - bank
         - active
       properties:
-        company_id: &ref_1
+        company_id:
           type: string
           format: uuid
         code:
@@ -4570,10 +4630,11 @@ components:
             - equity
             - income
             - expense
-        bank: &ref_0
+        bank:
           type: boolean
-        active: *ref_0
-        revision: &ref_3
+        active:
+          type: boolean
+        revision:
           type: integer
           minimum: 1
     FinancePeriodInput:
@@ -4584,14 +4645,18 @@ components:
         - starts_on
         - ends_on
       properties:
-        company_id: *ref_1
+        company_id:
+          type: string
+          format: uuid
         name:
           type: string
           maxLength: 100
-        starts_on: &ref_2
+        starts_on:
           type: string
           format: date
-        ends_on: *ref_2
+        ends_on:
+          type: string
+          format: date
     FinanceLockInput:
       type: object
       required:
@@ -4600,12 +4665,17 @@ components:
         - reason
         - revision
       properties:
-        company_id: *ref_1
-        locked: *ref_0
+        company_id:
+          type: string
+          format: uuid
+        locked:
+          type: boolean
         reason:
           type: string
           maxLength: 500
-        revision: *ref_3
+        revision:
+          type: integer
+          minimum: 1
     FinanceSettingsInput:
       type: object
       required:
@@ -4622,23 +4692,38 @@ components:
         - vat_registered
         - issuer_code
       properties:
-        company_id: *ref_1
+        company_id:
+          type: string
+          format: uuid
         revision:
           type: integer
           minimum: 0
-        receivable: *ref_1
-        payable: *ref_1
-        revenue: *ref_1
-        expense: *ref_1
-        vat_input: *ref_1
-        vat_output: *ref_1
+        receivable:
+          type: string
+          format: uuid
+        payable:
+          type: string
+          format: uuid
+        revenue:
+          type: string
+          format: uuid
+        expense:
+          type: string
+          format: uuid
+        vat_input:
+          type: string
+          format: uuid
+        vat_output:
+          type: string
+          format: uuid
         seller_name:
           type: string
           maxLength: 160
         seller_address:
           type: string
           maxLength: 500
-        vat_registered: *ref_0
+        vat_registered:
+          type: boolean
         tin:
           type:
             - string
@@ -4664,16 +4749,20 @@ components:
         - debit
         - credit
       properties:
-        account_id: *ref_1
-        debit: &ref_4
+        account_id:
+          type: string
+          format: uuid
+        debit:
           type: string
           pattern: ^(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
-        credit: *ref_4
+        credit:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
         description:
           type:
             - string
             - 'null'
-          maxLength: 500
+          maxLength: 300
     FinanceDraftInput:
       type: object
       required:
@@ -4682,8 +4771,12 @@ components:
         - narration
         - lines
       properties:
-        company_id: *ref_1
-        date: *ref_2
+        company_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
         narration:
           type: string
           maxLength: 500
@@ -4693,7 +4786,9 @@ components:
           maxItems: 100
           items:
             $ref: '#/components/schemas/FinanceLineInput'
-        revision: *ref_3
+        revision:
+          type: integer
+          minimum: 1
     FinanceInvoiceInput:
       type: object
       required:
@@ -4706,11 +4801,20 @@ components:
         - buyer_address
         - supply_date
       properties:
-        company_id: *ref_1
-        date: *ref_2
-        due_date: *ref_2
-        order_id: *ref_1
-        tax_invoice: *ref_0
+        company_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        order_id:
+          type: string
+          format: uuid
+        tax_invoice:
+          type: boolean
         buyer_name:
           type: string
           maxLength: 160
@@ -4722,13 +4826,17 @@ components:
             - string
             - 'null'
           pattern: ^[0-9]{9}$
-        supply_date: *ref_2
+        supply_date:
+          type: string
+          format: date
         request_evidence:
           type:
             - string
             - 'null'
           maxLength: 500
-        revision: *ref_3
+        revision:
+          type: integer
+          minimum: 1
     FinanceBillInput:
       type: object
       required:
@@ -4741,32 +4849,50 @@ components:
         - net
         - vat
       properties:
-        company_id: *ref_1
-        date: *ref_2
-        due_date: *ref_2
-        party_id: *ref_1
+        company_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        party_id:
+          type: string
+          format: uuid
         supplier_reference:
           type: string
           maxLength: 100
         description:
           type: string
           maxLength: 500
-        net: *ref_4
-        vat: *ref_4
+        net:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
+        vat:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
         vat_evidence:
           type:
             - string
             - 'null'
           maxLength: 500
-        revision: *ref_3
+        revision:
+          type: integer
+          minimum: 1
     FinanceRevisionInput:
       type: object
       required:
         - company_id
         - revision
       properties:
-        company_id: *ref_1
-        revision: *ref_3
+        company_id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
     FinanceReasonInput:
       type: object
       required:
@@ -4774,8 +4900,12 @@ components:
         - date
         - reason
       properties:
-        company_id: *ref_1
-        date: *ref_2
+        company_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
         reason:
           type: string
           maxLength: 500
@@ -4786,8 +4916,12 @@ components:
         - revision
         - reason
       properties:
-        company_id: *ref_1
-        revision: *ref_3
+        company_id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
         reason:
           type: string
           maxLength: 500
@@ -4801,14 +4935,24 @@ components:
         - reference
         - amount
       properties:
-        company_id: *ref_1
-        document_id: *ref_1
-        bank_account_id: *ref_1
-        date: *ref_2
+        company_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        bank_account_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
         reference:
           type: string
           maxLength: 100
-        amount: *ref_4
+        amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
     FinanceStatementInput:
       type: object
       required:
@@ -4821,15 +4965,26 @@ components:
         - opening_cleared_confirmed
         - lines
       properties:
-        company_id: *ref_1
-        bank_account_id: *ref_1
-        starts_on: *ref_2
-        ends_on: *ref_2
-        opening: &ref_5
+        company_id:
+          type: string
+          format: uuid
+        bank_account_id:
+          type: string
+          format: uuid
+        starts_on:
+          type: string
+          format: date
+        ends_on:
+          type: string
+          format: date
+        opening:
           type: string
           pattern: ^-?(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
-        closing: *ref_5
-        opening_cleared_confirmed: *ref_0
+        closing:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
+        opening_cleared_confirmed:
+          type: boolean
         lines:
           type: array
           maxItems: 100
@@ -4840,24 +4995,32 @@ components:
               - reference
               - amount
             properties:
-              date: *ref_2
+              date:
+                type: string
+                format: date
               reference:
                 type: string
                 maxLength: 100
-              amount: *ref_5
+              amount:
+                type: string
+                pattern: ^-?(0|[1-9][0-9]{0,21})(\.[0-9]{1,2})?$
               line_id:
                 type:
                   - string
                   - 'null'
                 format: uuid
-        revision: *ref_3
+        revision:
+          type: integer
+          minimum: 1
     FinancePrintInput:
       type: object
       required:
         - company_id
         - kind
       properties:
-        company_id: *ref_1
+        company_id:
+          type: string
+          format: uuid
         kind:
           enum:
             - original
@@ -4873,18 +5036,20 @@ components:
       required:
         - id
       properties:
-        id: *ref_1
+        id:
+          type: string
+          format: uuid
     FinanceDetail:
       type: object
       required:
         - record
       properties:
         record:
-          type: object
+          $ref: '#/components/schemas/FinanceRecord'
         lines:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/FinanceLineData'
         outstanding:
           type:
             - string
@@ -4892,7 +5057,15 @@ components:
         payments:
           type: array
           items:
-            type: object
+            allOf:
+              - $ref: '#/components/schemas/FinanceRecord'
+              - type: object
+                properties:
+                  void_id:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
         prints:
           type: array
           maxItems: 100
@@ -4904,7 +5077,9 @@ components:
               - created_at
               - sha256
             properties:
-              id: *ref_1
+              id:
+                type: string
+                format: uuid
               kind:
                 type: string
               reason:
@@ -4917,6 +5092,33 @@ components:
               sha256:
                 type: string
                 pattern: ^[a-f0-9]{64}$
+        reversal_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        void:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              type: string
+              format: uuid
+            payment_id:
+              type: string
+              format: uuid
+            journal_id:
+              type: string
+              format: uuid
+            reason:
+              type: string
+            actor_id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
     FinancePage:
       type: object
       required:
@@ -4930,7 +5132,9 @@ components:
           type: array
           maxItems: 25
           items:
-            type: object
+            anyOf:
+              - $ref: '#/components/schemas/FinanceRecord'
+              - $ref: '#/components/schemas/FinanceLineData'
         current_page:
           type: integer
         last_page:
@@ -4952,22 +5156,209 @@ components:
           type: array
           items:
             type: object
+            required:
+              - id
+              - company_id
+              - code
+              - name
+              - type
+              - bank
+              - active
+              - revision
+            properties:
+              id:
+                type: string
+                format: uuid
+              company_id:
+                type: string
+                format: uuid
+              code:
+                type: string
+                pattern: ^[A-Z0-9][A-Z0-9_-]{0,19}$
+              name:
+                type: string
+                maxLength: 160
+              type:
+                enum:
+                  - asset
+                  - liability
+                  - equity
+                  - income
+                  - expense
+              bank:
+                type: boolean
+              active:
+                type: boolean
+              revision:
+                type: integer
+                minimum: 1
         periods:
           type: array
           items:
             type: object
+            required:
+              - id
+              - company_id
+              - name
+              - starts_on
+              - ends_on
+              - locked
+              - revision
+            properties:
+              id:
+                type: string
+                format: uuid
+              company_id:
+                type: string
+                format: uuid
+              name:
+                type: string
+                maxLength: 100
+              starts_on:
+                type: string
+                format: date
+              ends_on:
+                type: string
+                format: date
+              locked:
+                type: boolean
+              revision:
+                type: integer
+                minimum: 1
+              reason:
+                type:
+                  - string
+                  - 'null'
         settings:
-          type:
-            - object
-            - 'null'
+          oneOf:
+            - type: object
+              required:
+                - revision
+                - receivable
+                - payable
+                - revenue
+                - expense
+                - vat_input
+                - vat_output
+                - seller_name
+                - seller_address
+                - vat_registered
+                - issuer_code
+              properties:
+                revision:
+                  type: integer
+                  minimum: 0
+                receivable:
+                  type: string
+                  format: uuid
+                payable:
+                  type: string
+                  format: uuid
+                revenue:
+                  type: string
+                  format: uuid
+                expense:
+                  type: string
+                  format: uuid
+                vat_input:
+                  type: string
+                  format: uuid
+                vat_output:
+                  type: string
+                  format: uuid
+                seller_name:
+                  type: string
+                  maxLength: 160
+                seller_address:
+                  type: string
+                  maxLength: 500
+                vat_registered:
+                  type: boolean
+                tin:
+                  type:
+                    - string
+                    - 'null'
+                  pattern: ^[0-9]{9}$
+                vat_registration:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 30
+                vat_effective_from:
+                  type:
+                    - string
+                    - 'null'
+                  format: date
+                issuer_code:
+                  type: string
+                  pattern: ^(?=[A-Z0-9]*[0-9])[A-Z0-9]{1,15}$
+            - type: 'null'
         orders:
           type: array
           items:
             type: object
+            required:
+              - id
+              - companyId
+              - number
+              - quoteId
+              - customerId
+              - currency
+              - net
+              - vat
+              - total
+            properties:
+              id:
+                type: string
+                format: uuid
+              companyId:
+                type: string
+                format: uuid
+              number:
+                type: string
+              quoteId:
+                type: string
+                format: uuid
+              customerId:
+                type: string
+                format: uuid
+              currency:
+                const: LKR
+              net:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              vat:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              total:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
         suppliers:
           type: array
           items:
             type: object
+            required:
+              - id
+              - companyId
+              - number
+              - name
+              - customer
+              - supplier
+            properties:
+              id:
+                type: string
+                format: uuid
+              companyId:
+                type: string
+                format: uuid
+              number:
+                type: string
+              name:
+                type: string
+              customer:
+                type: boolean
+              supplier:
+                type: boolean
     FinanceReports:
       type: object
       required:
@@ -4975,12 +5366,420 @@ components:
         - aging
       properties:
         trial:
-          type: object
-          description: >-
-            Posted ledger management trial, income/expense and position; exact string amounts, cumulative unclosed
-            result, no statutory certification.
+          $ref: '#/components/schemas/FinanceTrial'
         aging:
+          $ref: '#/components/schemas/FinanceAging'
+    FinanceLineData:
+      type: object
+      required:
+        - account_id
+        - debit
+        - credit
+      properties:
+        id:
+          type: string
+          format: uuid
+        company_id:
+          type: string
+          format: uuid
+        journal_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        account_code:
+          type: string
+        account_name:
+          type: string
+        account_type:
+          type: string
+        bank:
+          type: boolean
+        debit:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        credit:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        description:
+          type:
+            - string
+            - 'null'
+        position:
+          type: integer
+          minimum: 0
+        date:
+          type: string
+          format: date
+        number:
+          type: string
+        narration:
+          type: string
+        source_kind:
+          type: string
+    FinanceRecord:
+      type: object
+      required:
+        - id
+        - company_id
+        - number
+      properties:
+        id:
+          type: string
+          format: uuid
+        company_id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        state:
+          enum:
+            - draft
+            - posted
+            - cancelled
+            - finalized
+        kind:
+          enum:
+            - invoice
+            - bill
+        source_kind:
+          type: string
+        source_id:
+          type: string
+          format: uuid
+        reversal_of:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        journal_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        period_id:
+          type: string
+          format: uuid
+        party_id:
+          type: string
+          format: uuid
+        order_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        supplier_reference:
+          type:
+            - string
+            - 'null'
+        narration:
+          type: string
+        reference:
+          type: string
+        bank_account_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        actor_id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+        net:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        vat:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        total:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        amount:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        outstanding:
+          type:
+            - string
+            - 'null'
+        starts_on:
+          type: string
+          format: date
+        ends_on:
+          type: string
+          format: date
+        opening:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        closing:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        opening_cleared_confirmed:
+          type: boolean
+        snapshot:
           type: object
           description: >-
-            Invoice/bill current, 1_30, 31_60, 61_90 and 90_plus bucket strings over all open documents; document
-            preview capped at 100.
+            Immutable seller/purchaser/source/tax particulars or declared supplier expense evidence; posted
+            snapshots cannot be repriced.
+        lines:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            description: >-
+              Draft journal lines use FinanceLineData; statement lines retain explicit date/reference/signed
+              amount/line_id.
+        summary:
+          type: object
+          required:
+            - book_balance
+            - outstanding_net
+            - adjusted_book
+            - statement_closing
+            - baseline_start
+          properties:
+            book_balance:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+            outstanding_net:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+            adjusted_book:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+            statement_closing:
+              type: string
+              pattern: ^-?[0-9]+\.[0-9]{2}$
+            baseline_start:
+              type: string
+              format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    FinanceTrial:
+      type: object
+      required:
+        - currency
+        - from
+        - to
+        - accounts
+        - period_debit
+        - period_credit
+        - period_difference
+        - income
+        - expense
+        - period_result
+        - assets
+        - liabilities
+        - equity
+        - cumulative_unclosed_result
+        - position_difference
+        - label
+      properties:
+        currency:
+          const: LKR
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        accounts:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - code
+              - name
+              - type
+              - opening
+              - debit
+              - credit
+              - closing
+            properties:
+              id:
+                type: string
+                format: uuid
+              code:
+                type: string
+              name:
+                type: string
+              type:
+                enum:
+                  - asset
+                  - liability
+                  - equity
+                  - income
+                  - expense
+              opening:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              debit:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              credit:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              closing:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+        period_debit:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        period_credit:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        period_difference:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        income:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        expense:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        period_result:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        assets:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        liabilities:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        equity:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        cumulative_unclosed_result:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        position_difference:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+        label:
+          type: string
+    FinanceAging:
+      type: object
+      required:
+        - currency
+        - as_of
+        - buckets
+        - open_count
+        - documents
+        - preview_limit
+      properties:
+        currency:
+          const: LKR
+        as_of:
+          type: string
+          format: date
+        buckets:
+          type: object
+          required:
+            - invoice
+            - bill
+          properties:
+            invoice:
+              type: object
+              required:
+                - current
+                - '1_30'
+                - '31_60'
+                - '61_90'
+                - 90_plus
+              properties:
+                current:
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                '1_30':
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                '31_60':
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                '61_90':
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                90_plus:
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+            bill:
+              type: object
+              required:
+                - current
+                - '1_30'
+                - '31_60'
+                - '61_90'
+                - 90_plus
+              properties:
+                current:
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                '1_30':
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                '31_60':
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                '61_90':
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+                90_plus:
+                  type: string
+                  pattern: ^-?[0-9]+\.[0-9]{2}$
+        open_count:
+          type: integer
+          minimum: 0
+        documents:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - id
+              - kind
+              - number
+              - due_date
+              - party_name
+              - outstanding
+              - bucket
+            properties:
+              id:
+                type: string
+                format: uuid
+              kind:
+                enum:
+                  - invoice
+                  - bill
+              number:
+                type: string
+              due_date:
+                type: string
+                format: date
+              party_name:
+                type: string
+              outstanding:
+                type: string
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              bucket:
+                enum:
+                  - current
+                  - '1_30'
+                  - '31_60'
+                  - '61_90'
+                  - 90_plus
+        preview_limit:
+          const: 100
