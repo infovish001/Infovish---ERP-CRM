@@ -7,7 +7,7 @@
 | M02 | Tenant provisioning, identity, organization, audit | Authorized by user continuation after M01; evidence in M02_REPORT.md |
 | M03 | Module framework, shared services, catalog and contacts | Authorized after M02; verified in M03_REPORT; stop before M04 |
 | M04 | CRM | Authorized after M03; verified in M04_REPORT; stop before M05 |
-| M05 | Sales and first commercial release | Authorized after M04; M05_SPEC/M05_REPORT and separate R1 release gates; stop before M06 |
+| M05 | Sales and first commercial release | Functional baseline verified in M05_REPORT; R1 release gates remain open; stop before M06 |
 | M06 | Finance and accounting | Future |
 | M07 | Inventory and procurement | Future |
 | M08 | HR, projects, helpdesk, portals and documents | Future |
