@@ -24,7 +24,7 @@ class PlatformServicesTest extends TestCase
 
     public function test_postgres_migrations_round_trip_and_transactions(): void
     {
-        $this->artisan('migrate', ['--force' => true])->assertSuccessful();
+        $this->artisan('migrate', ['--database' => 'provisioner', '--force' => true])->assertSuccessful();
         $this->assertTrue(Schema::hasTable('foundation_checks'));
         $id = (string) Str::uuid();
         DB::beginTransaction();
@@ -35,9 +35,10 @@ class PlatformServicesTest extends TestCase
             DB::rollBack();
         }
         $this->assertSame(0, DB::table('foundation_checks')->where('id', $id)->count());
-        $this->artisan('migrate:rollback', ['--step' => 1, '--force' => true])->assertSuccessful();
-        $this->assertFalse(Schema::hasTable('foundation_checks'));
-        $this->artisan('migrate', ['--force' => true])->assertSuccessful();
+        $this->artisan('migrate', ['--database' => 'provisioner', '--path' => 'database/testing-migrations', '--force' => true])->assertSuccessful();
+        $this->assertTrue(Schema::hasTable('migration_probe'));
+        $this->artisan('migrate:rollback', ['--database' => 'provisioner', '--path' => 'database/testing-migrations', '--step' => 1, '--force' => true])->assertSuccessful();
+        $this->assertFalse(Schema::hasTable('migration_probe'));
     }
 
     public function test_real_redis_connectivity_and_queue_processing(): void

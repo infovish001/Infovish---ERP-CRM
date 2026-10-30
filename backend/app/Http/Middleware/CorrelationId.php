@@ -15,6 +15,7 @@ final class CorrelationId
     {
         // Do not echo untrusted header values into logs.
         $id = (string) Str::uuid();
+        $request->attributes->set('correlation_id', $id);
         Log::withContext(['correlation_id' => $id]);
         try {
             $response = $next($request);

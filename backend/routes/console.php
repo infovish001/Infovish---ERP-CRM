@@ -22,3 +22,5 @@ Artisan::command('foundation:queue-check', function () {
 
     return $processed ? 0 : 1;
 })->purpose('Dispatch and process an isolated real Redis queue probe');
+
+require __DIR__.'/platform-console.php';

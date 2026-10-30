@@ -11,9 +11,9 @@ Baseline: PRD v1.1, SAD v1.0 and master request. Range identifiers are preserved
 | NFR-006 | M01 | PostgreSQL migrations and integration round trip | Verified on platform/test databases; tenant fleet migrations remain deferred |
 | NFR-007, ARC-BE-010 | M01 | JSON formatter, generated correlation IDs, sanitized readiness | Foundation only; audit M02 |
 | SAD-AC-002, ARC-BE-004 | M01 | Module convention and static import/manifest checker | Foundation only; zero business modules |
-| SAD-AC-013, NFR-003 | M00/M01 | Versioned API/event design; health OpenAPI | No business API implemented |
+| SAD-AC-013, NFR-003 | M00/M01 | Versioned API/event design; health OpenAPI | M02 adds versioned identity/organization APIs; later business APIs deferred |
 | NFR-015 | M01 | Responsive shell, theme, semantic controls and keyboard access | Preliminary; no WCAG conformance claim |
-| TEN range, IAM range, ORG range, NFR-001, SEC-001 | M02 | Fail-closed context foundation only | Deferred; isolation/membership unimplemented |
+| TEN/IAM/ORG ranges, BR-TEN, NFR-001/004/006/007, SEC-001 | M02 | M02_SPEC, ADR-019, tenant/identity/organization services and real PostgreSQL/Redis tests | Implemented baseline; verification and remaining gates in M02_REPORT. SSO, field permissions and broader enterprise scope deferred |
 | MOD range, Parties/Catalog | M03 | Registration convention only | Deferred |
 | CRM range, SAL range | M04/M05 | No business code | Deferred |
 | FIN range, BR-FIN, NFR-009 | M06 | Decimal/transaction policy in architecture | Deferred; no financial calculations |
@@ -25,4 +25,4 @@ Baseline: PRD v1.1, SAD v1.0 and master request. Range identifiers are preserved
 | STU/IND ranges | M12 | Metadata/industry isolation ADRs | Deferred |
 | CLD range, NFR-008/010/011/012/014/017/018/020 | M13 or earlier release gates | Deployment and recovery objectives | Unverified; no service guarantees |
 
-No requirement is Released. Verification outcomes, commands and known blockers are maintained in the M01 report. BI functionality and competitor parity remain unimplemented/unverified; no Odoo/Flectra edition or feature assertion is made.
+No requirement is Released. Verification outcomes, commands and known blockers are maintained in the M01 and M02 reports. BI functionality and competitor parity remain unimplemented/unverified; no Odoo/Flectra edition or feature assertion is made.

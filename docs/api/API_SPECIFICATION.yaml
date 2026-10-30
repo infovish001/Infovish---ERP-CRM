@@ -1,9 +1,134 @@
 openapi: 3.1.0
 info:
-  title: Infovish foundation probes
-  version: 0.1.0
-  description: Process liveness and platform dependency readiness only. No business API is implemented.
+  title: Infovish platform and organization API
+  version: 0.2.0
+  description: >-
+    M02 session-authenticated organization APIs run on an exact registered tenant host.
+    Sign in through Fortify, complete MFA when enrolled, and provide the host-bound
+    session cookie. Mutations require the page's CSRF token. Tenant headers and body
+    identifiers never select a tenant. Public token/OAuth integrations remain deferred.
 paths:
+  /login:
+    post:
+      operationId: login
+      parameters: [{ $ref: '#/components/parameters/Csrf' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200': { description: Password accepted; two_factor flag indicates whether a challenge is required. }
+        '422': { description: Generic invalid credentials or input validation failure. }
+        '429': { description: Too many login attempts. }
+  /two-factor-challenge:
+    post:
+      operationId: completeMfa
+      parameters: [{ $ref: '#/components/parameters/Csrf' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string }
+                recovery_code: { type: string, format: password }
+      responses:
+        '204': { description: MFA accepted and authenticated session regenerated. }
+        '403': { description: 'Challenge tenant, identity state or session version did not match.' }
+        '422': { description: Invalid authentication or recovery code. }
+        '429': { description: Too many challenge attempts. }
+  /api/v1/me:
+    get:
+      operationId: currentMembership
+      security: [{ session: [] }]
+      responses:
+        '200':
+          description: Authenticated identity and current server-verified tenant role; no credentials or MFA secrets.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  name: { type: string }
+                  email: { type: string, format: email }
+                  tenant_id: { type: string, format: uuid }
+                  role: { enum: [owner, administrator, auditor, member] }
+        '401': { description: Login or fresh session required. }
+        '403': { description: Membership or privileged MFA requirement denied access. }
+  /api/v1/organization:
+    get:
+      operationId: organization
+      security: [{ session: [] }]
+      responses:
+        '200':
+          description: Companies, branches and departments filtered by current membership grants.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  companies: { type: array, items: { type: object } }
+                  branches: { type: array, items: { type: object } }
+                  departments: { type: array, items: { type: object } }
+        '401': { description: Login or fresh session required. }
+        '403': { description: Workspace access denied. }
+  /api/v1/organization/{kind}:
+    post:
+      operationId: createOrganizationRecord
+      security: [{ session: [] }]
+      parameters: [{ $ref: '#/components/parameters/Kind' }, { $ref: '#/components/parameters/Csrf' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, name]
+              properties:
+                code: { type: string, pattern: '^[A-Z][A-Z0-9_-]{0,19}$' }
+                name: { type: string, maxLength: 120 }
+                base_currency: { type: string, pattern: '^[A-Z]{3}$', description: Required for a company; no conversion or accounting policy is implied. }
+                timezone: { type: string, description: Required IANA identifier for a company. }
+                company_id: { type: string, format: uuid, description: Required for a branch or department in this tenant. }
+                branch_id: { type: [string, 'null'], format: uuid, description: Optional department branch within the same company. }
+                active: { type: boolean }
+      responses:
+        '201': { description: Created atomically with an audit event; response contains its UUID. }
+        '401': { description: Login required. }
+        '403': { description: 'Role, scope, lifecycle or privileged MFA denied the operation.' }
+        '422': { description: Invalid fields or duplicate code. }
+  /api/v1/organization/{kind}/{id}:
+    put:
+      operationId: updateOrganizationRecord
+      security: [{ session: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/Kind' }
+        - { $ref: '#/components/parameters/Csrf' }
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, maxLength: 120 }
+                active: { type: boolean }
+      responses:
+        '200': { description: Name/status updated atomically with an audit event; immutable fields are not modified. }
+        '401': { description: Login required. }
+        '403': { description: Role or privileged MFA denied the operation. }
+        '404': { description: Record does not exist in the resolved tenant database. }
+        '422': { description: Validation failure. }
   /health:
     get:
       operationId: health
@@ -32,6 +157,23 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Readiness' }
 components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: header
+      name: Cookie
+      description: Browser-managed, host-only session cookie named infovish_ followed by a hash of the registered host.
+  parameters:
+    Kind:
+      name: kind
+      in: path
+      required: true
+      schema: { enum: [company, branch, department] }
+    Csrf:
+      name: X-CSRF-TOKEN
+      in: header
+      required: true
+      schema: { type: string }
   schemas:
     Readiness:
       type: object

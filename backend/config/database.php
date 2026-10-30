@@ -32,6 +32,19 @@ return [
 
     'connections' => [
 
+        // Credentials are supplied only to the privileged operator/test process.
+        'provisioner' => [
+            'driver' => 'pgsql',
+            'host' => env('TENANT_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('TENANT_DB_PORT', env('DB_PORT', '5432')),
+            'database' => env('PROVISIONING_DB_DATABASE', env('DB_DATABASE', 'infovish_platform')),
+            'username' => env('PROVISIONING_DB_USERNAME'),
+            'password' => env('PROVISIONING_DB_PASSWORD'),
+            'charset' => 'utf8', 'search_path' => 'public',
+            'sslmode' => env('TENANT_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
+            'options' => [PDO::ATTR_TIMEOUT => 3],
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),

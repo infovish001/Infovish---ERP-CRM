@@ -5,7 +5,14 @@ vi.mock('@inertiajs/react', () => ({ router: { reload: vi.fn() }, Head: () => nu
 afterEach(cleanup);
 describe('foundation shell', () => {
     it('presents dependency failures without claiming readiness', () => {
-        render(<FoundationShell readiness={{ status: 'unavailable', checks: { database: 'unavailable', redis: 'ready' } }} />);
+        render(
+            <FoundationShell
+                readiness={{
+                    status: 'unavailable',
+                    checks: { database: 'unavailable', redis: 'ready' },
+                }}
+            />,
+        );
         expect(screen.getByText('Some services need attention')).toBeTruthy();
         expect(screen.getByText('Unavailable')).toBeTruthy();
         expect(screen.getByText('Reachable')).toBeTruthy();

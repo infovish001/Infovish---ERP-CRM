@@ -40,6 +40,8 @@ jobs:
       DB_DATABASE: infovish_test
       DB_USERNAME: infovish_ci
       DB_PASSWORD: ephemeral-ci-only
+      PROVISIONING_DB_USERNAME: infovish_ci
+      PROVISIONING_DB_PASSWORD: ephemeral-ci-only
       REDIS_CLIENT: predis
       REDIS_HOST: 127.0.0.1
       REDIS_PORT: '6379'
@@ -69,7 +71,14 @@ jobs:
       - run: php vendor/bin/phpstan analyse --memory-limit=512M
       - run: php tools/check-boundaries.php
       - run: php artisan migrate --force
+      - name: Configure restricted test application role
+        run: printf '%s' "$RUNTIME_DB_PASSWORD" | php artisan platform:runtime-role infovish_test_app --password-stdin
+        env:
+          RUNTIME_DB_PASSWORD: ephemeral-ci-runtime-only
       - run: php artisan test
+        env:
+          DB_USERNAME: infovish_test_app
+          DB_PASSWORD: ephemeral-ci-runtime-only
       - run: npm ci
       - run: node tools/check-api.mjs
       - run: npm run typecheck

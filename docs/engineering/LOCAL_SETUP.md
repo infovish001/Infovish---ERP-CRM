@@ -15,7 +15,10 @@ npm run build
 Set-Location ..
 docker compose up -d --wait postgres redis
 Set-Location backend
-php artisan migrate
+Set-Location ..
+./scripts/platform-local.ps1 Migrate
+./scripts/platform-local.ps1 RuntimeRole
+Set-Location backend
 php artisan foundation:queue-check
 php artisan serve --host=127.0.0.1 --port=8000
 ```
@@ -24,13 +27,9 @@ Open http://localhost:8000. `/health` is process liveness and `/ready` checks re
 
 If port 8000 is already occupied, select a free Docker app port with `$env:APP_PORT = '8011'` before `docker compose up`, then open http://localhost:8011. The setting can also be retained as `APP_PORT=8011` in the ignored root `.env`. The application container continues listening on port 8000 internally.
 
-For the complete Docker development path, prepare `.env` files with the setup script, then `docker compose up -d --build --wait`. Run `docker compose exec app php artisan migrate` and `docker compose exec app php artisan foundation:queue-check`. Run framework/frontend checks within the app or host as appropriate. Container PHP includes Linux worker signal support. This image contains developer dependencies and uses the Laravel development server; it is not a production deployment.
+For the complete Docker development path, prepare `.env` files with the setup script, then `docker compose up -d --build --wait`. Run platform migrations through `scripts/platform-local.ps1 Migrate`, then configure the runtime role; see [M02 operator setup](M02_SETUP.md). Do not give the web/worker role provisioning privileges. `docker compose exec app php artisan foundation:queue-check` checks the queue. Run framework/frontend checks within the app or host as appropriate. Container PHP includes Linux worker signal support. This image contains developer dependencies and uses the Laravel development server; it is not a production deployment.
 
-For container backend regression tests, explicitly select the dedicated database and test environment because Compose supplies application environment variables:
-
-```powershell
-docker compose exec -e APP_ENV=testing -e DB_DATABASE=infovish_test -e CACHE_STORE=array -e SESSION_DRIVER=array -e QUEUE_CONNECTION=sync -e RUN_INTEGRATION=1 app php vendor/bin/phpunit
-```
+For complete backend regression tests use `./scripts/platform-local.ps1 Test` from the root. Container integration runs require a dedicated restricted test role and separately injected ephemeral provisioning credentials; see [M02 setup](M02_SETUP.md) and hosted CI for the privilege sequence. The live app/worker must never retain those administrator credentials.
 
 Host verification (from `backend`):
 
@@ -44,14 +43,14 @@ npm run lint
 npm test
 npm run build
 node tools/check-api.mjs
-$env:RUN_INTEGRATION = '1'
-php artisan test --testsuite=Integration
-Remove-Item Env:RUN_INTEGRATION
+Set-Location ..
+./scripts/platform-local.ps1 Test
+Set-Location backend
 composer audit --locked
 npm audit --audit-level=high
 ```
 
-Integration tests require the separate `infovish_test` database. The initialization SQL creates it only on a fresh PostgreSQL volume. For an existing local volume, create that test database explicitly with `docker compose exec postgres createdb -U infovish_local infovish_test`; do not erase volumes to fix setup. Tests reject a different database name before migration/rollback checks. They do not implement tenant isolation tests (M02).
+Integration tests require the separate `infovish_test` database. The initialization SQL creates it only on a fresh PostgreSQL volume. For an existing local volume, create that test database explicitly with `docker compose exec postgres createdb -U infovish_local infovish_test`; do not erase volumes to fix setup. Tests reject a different database name before migration/rollback checks. M02 adds real tenant isolation and authorization tests, run through the operator helper with restricted runtime access.
 
 If Docker reports a missing pipe, start its Linux engine. A permission-denied pipe may be a sandbox restriction and requires the host's normal Docker access. Do not bypass engine security. If DLL loading fails, confirm the installed PHP extension directory and matching build; use Docker rather than downloading arbitrary DLLs. Network restrictions can block Composer/npm/image pulls; report these honestly. Do not pass `--ignore-platform-reqs`, `--force` or `--legacy-peer-deps` to disguise incompatibility.
 
