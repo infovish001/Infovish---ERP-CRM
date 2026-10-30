@@ -1,10 +1,14 @@
 <?php
 
 use App\Platform\Identity\User;
+use App\Platform\ModuleRegistry\ModuleRegistry;
+use App\Platform\ModuleRegistry\TenantSchema;
 use App\Platform\Tenancy\RuntimeRole;
 use App\Platform\Tenancy\TenantDomains;
+use App\Platform\Tenancy\TenantExecution;
 use App\Platform\Tenancy\TenantProvisioner;
 use App\Shared\Audit\Audit;
+use App\Shared\Events\Outbox;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -36,7 +40,7 @@ Artisan::command('platform:tenant-state {slug} {status}', function () {
     abort_unless(in_array($this->argument('status'), ['active', 'suspended'], true), 422, 'Choose active or suspended.');
     DB::connection('provisioner')->transaction(function () {
         $tenant = DB::connection('provisioner')->table('tenants')->where('slug', $this->argument('slug'))->lockForUpdate()->first();
-        abort_unless($tenant && $tenant->schema_version === 1 && in_array($tenant->status, ['active', 'suspended'], true), 422);
+        abort_unless($tenant && in_array($tenant->schema_version, [1, 2], true) && in_array($tenant->status, ['active', 'suspended'], true), 422);
         if ($tenant->status === $this->argument('status')) {
             return;
         }
@@ -73,3 +77,27 @@ Artisan::command('platform:runtime-role {username} {--password-stdin} {--write-e
 
     return 0;
 })->purpose('Create a non-provisioning runtime role; optionally retain generated credentials in ignored .env');
+
+Artisan::command('platform:tenant-upgrade {slug}', function () {
+    app(TenantSchema::class)->upgrade($this->argument('slug'));
+    $this->info('Tenant schema and bundled modules upgraded; credentials were not emitted.');
+})->purpose('Apply additive tenant/module migrations through separate operator credentials');
+
+Artisan::command('platform:module-entitlement {slug} {module} {allowed}', function () {
+    abort_unless(isset(app(ModuleRegistry::class)->manifests()[$this->argument('module')]) && in_array($this->argument('allowed'), ['yes', 'no'], true), 422);
+    $id = DB::connection('provisioner')->table('tenants')->where('slug', $this->argument('slug'))->value('id');
+    abort_unless(is_string($id), 404);
+    DB::connection('provisioner')->transaction(function () use ($id) {
+        DB::connection('provisioner')->table('tenant_module_entitlements')->updateOrInsert(['tenant_id' => $id, 'module' => $this->argument('module')], ['allowed' => $this->argument('allowed') === 'yes', 'created_at' => now(), 'updated_at' => now()]);
+        app(Audit::class)->platform('module.entitlement_changed', null, $id, $id, connection: 'provisioner');
+    });
+    $this->info('Module entitlement updated. Activation remains a separate authorized workspace action.');
+})->purpose('Grant/revoke a bundled module without changing billing or tenant data');
+
+Artisan::command('platform:outbox-dispatch {slug} {actor-email} {--queue=default}', function () {
+    $tenant = DB::connection('pgsql')->table('tenants')->where('slug', $this->argument('slug'))->first();
+    $actor = User::where('email', strtolower($this->argument('actor-email')))->where('active', true)->first();
+    abort_unless($tenant && $tenant->schema_version === 2 && $actor, 422);
+    $count = app(TenantExecution::class)->run($tenant->id, $actor->id, fn () => app(Outbox::class)->dispatch($this->option('queue')));
+    $this->info('Published '.$count.' durable events; tenant context cleared.');
+})->purpose('Publish one bounded outbox batch under a current authorized tenant actor');

@@ -7,7 +7,8 @@ import Challenge from './pages/Challenge';
 import ConfirmPassword from './pages/ConfirmPassword';
 import Security from './pages/Security';
 import Workspace from './pages/Workspace';
-const pages = { Foundation, Login, Challenge, ConfirmPassword, Security, Workspace };
+import MasterData from './pages/MasterData';
+const pages = { Foundation, Login, Challenge, ConfirmPassword, Security, Workspace, MasterData };
 void createInertiaApp({
     title: (title) => `${title} · Infovish ERP`,
     resolve: (name) => {

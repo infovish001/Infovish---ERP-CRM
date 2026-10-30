@@ -1,6 +1,6 @@
 # File inventory
 
-M00 through M02 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
+M00 through M03 repository files. Original references are preserved. Generated dependencies, private runtime data, credentials and build output are excluded.
 
 - `.dockerignore`
 - `.gitattributes`
@@ -18,15 +18,31 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `backend/.prettierrc.json`
 - `backend/README.md`
 - `backend/app/Http/Controllers/Controller.php`
+- `backend/app/Http/Controllers/MasterDataController.php`
 - `backend/app/Http/Controllers/WorkspaceController.php`
 - `backend/app/Http/Middleware/CorrelationId.php`
 - `backend/app/Http/Middleware/EnforceTenantSession.php`
 - `backend/app/Http/Middleware/HandleInertiaRequests.php`
 - `backend/app/Http/Middleware/RequirePrivilegedMfa.php`
 - `backend/app/Http/Middleware/ResolveTenantHost.php`
+- `backend/app/Modules/Catalog/Application/ProductService.php`
+- `backend/app/Modules/Catalog/Domain/Contracts/ProductData.php`
+- `backend/app/Modules/Catalog/Domain/Contracts/Products.php`
+- `backend/app/Modules/Catalog/Infrastructure/Migrations/2026_10_30_100002_create_catalog.php`
+- `backend/app/Modules/Catalog/README.md`
+- `backend/app/Modules/Catalog/module.json`
+- `backend/app/Modules/Parties/Application/ContactService.php`
+- `backend/app/Modules/Parties/Domain/Contracts/ContactData.php`
+- `backend/app/Modules/Parties/Domain/Contracts/Contacts.php`
+- `backend/app/Modules/Parties/Infrastructure/Migrations/2026_10_30_100001_create_parties.php`
+- `backend/app/Modules/Parties/README.md`
+- `backend/app/Modules/Parties/module.json`
 - `backend/app/Modules/README.md`
 - `backend/app/Platform/Identity/MembershipService.php`
 - `backend/app/Platform/Identity/User.php`
+- `backend/app/Platform/ModuleRegistry/ModuleAccess.php`
+- `backend/app/Platform/ModuleRegistry/ModuleRegistry.php`
+- `backend/app/Platform/ModuleRegistry/TenantSchema.php`
 - `backend/app/Platform/Organization/OrganizationService.php`
 - `backend/app/Platform/Tenancy/RuntimeRole.php`
 - `backend/app/Platform/Tenancy/TenantDomains.php`
@@ -35,10 +51,16 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `backend/app/Platform/Tenancy/TenantRegistry.php`
 - `backend/app/Providers/AppServiceProvider.php`
 - `backend/app/Providers/IdentityServiceProvider.php`
+- `backend/app/Providers/ModuleServiceProvider.php`
 - `backend/app/Shared/Audit/Audit.php`
+- `backend/app/Shared/Events/DeliverEvent.php`
+- `backend/app/Shared/Events/Outbox.php`
 - `backend/app/Shared/Health/FoundationProbe.php`
 - `backend/app/Shared/Health/Readiness.php`
 - `backend/app/Shared/Logging/JsonLogs.php`
+- `backend/app/Shared/MasterData/CompanyScope.php`
+- `backend/app/Shared/MasterData/Mutation.php`
+- `backend/app/Shared/MasterData/Numbering.php`
 - `backend/app/Shared/Tenancy/TenantCache.php`
 - `backend/app/Shared/Tenancy/TenantContext.php`
 - `backend/app/Shared/Tenancy/TenantFiles.php`
@@ -57,6 +79,7 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `backend/config/fortify.php`
 - `backend/config/logging.php`
 - `backend/config/mail.php`
+- `backend/config/modules.php`
 - `backend/config/queue.php`
 - `backend/config/services.php`
 - `backend/config/session.php`
@@ -65,8 +88,10 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `backend/database/migrations/0001_01_01_000002_create_jobs_table.php`
 - `backend/database/migrations/2026_10_30_000001_create_foundation_checks_table.php`
 - `backend/database/migrations/2026_10_30_010000_create_platform_identity_and_tenancy.php`
+- `backend/database/migrations/2026_10_30_020000_create_module_entitlements.php`
 - `backend/database/seeders/DatabaseSeeder.php`
 - `backend/database/tenant-migrations/2026_10_30_000001_create_tenant_organization.php`
+- `backend/database/tenant-migrations/2026_10_30_000002_create_shared_module_services.php`
 - `backend/database/testing-migrations/2099_01_01_000000_create_migration_probe.php`
 - `backend/eslint.config.js`
 - `backend/package-lock.json`
@@ -80,12 +105,15 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `backend/resources/css/app.css`
 - `backend/resources/js/app.tsx`
 - `backend/resources/js/components/AuthFrame.tsx`
+- `backend/resources/js/components/WorkspaceLayout.tsx`
 - `backend/resources/js/lib/request.ts`
 - `backend/resources/js/pages/Challenge.tsx`
 - `backend/resources/js/pages/ConfirmPassword.tsx`
 - `backend/resources/js/pages/Foundation.test.tsx`
 - `backend/resources/js/pages/Foundation.tsx`
 - `backend/resources/js/pages/Login.tsx`
+- `backend/resources/js/pages/MasterData.test.tsx`
+- `backend/resources/js/pages/MasterData.tsx`
 - `backend/resources/js/pages/Security.tsx`
 - `backend/resources/js/pages/Workspace.test.tsx`
 - `backend/resources/js/pages/Workspace.tsx`
@@ -105,9 +133,13 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `backend/storage/logs/.gitignore`
 - `backend/tests/Feature/ConfigurationSafetyTest.php`
 - `backend/tests/Feature/FoundationTest.php`
+- `backend/tests/Feature/ModuleManifestTest.php`
 - `backend/tests/Integration/M02TenancyTest.php`
+- `backend/tests/Integration/M03ModulesTest.php`
 - `backend/tests/Integration/PlatformServicesTest.php`
 - `backend/tests/Support/TenantContextProbeJob.php`
+- `backend/tests/Support/TenantIntegrationTest.php`
+- `backend/tests/Support/mutate.php`
 - `backend/tests/TestCase.php`
 - `backend/tests/Unit/ModuleBoundaryTest.php`
 - `backend/tests/Unit/TenantContextTest.php`
@@ -119,6 +151,7 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `compose.yaml`
 - `docs/api/API_SPECIFICATION.yaml`
 - `docs/architecture/ARCHITECTURE_VALIDATION.md`
+- `docs/architecture/DATABASE_DESIGN.md`
 - `docs/architecture/MODULE_BOUNDARIES.md`
 - `docs/architecture/TECHNOLOGY_DECISIONS.md`
 - `docs/architecture/decisions/ADR-001.md`
@@ -140,6 +173,7 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `docs/architecture/decisions/ADR-017.md`
 - `docs/architecture/decisions/ADR-018.md`
 - `docs/architecture/decisions/ADR-019.md`
+- `docs/architecture/decisions/ADR-020.md`
 - `docs/engineering/FILE_INVENTORY.md`
 - `docs/engineering/LOCAL_SETUP.md`
 - `docs/engineering/M00_REPORT.md`
@@ -147,8 +181,12 @@ M00 through M02 repository files. Original references are preserved. Generated d
 - `docs/engineering/M02_REPORT.md`
 - `docs/engineering/M02_SETUP.md`
 - `docs/engineering/M02_SPEC.md`
+- `docs/engineering/M03_REPORT.md`
+- `docs/engineering/M03_SETUP.md`
+- `docs/engineering/M03_SPEC.md`
 - `docs/engineering/MILESTONES.md`
 - `docs/engineering/TEST_STRATEGY.md`
+- `docs/modules/MODULE_CATALOG.md`
 - `docs/operations/DOCKER_WINDOWS_RECOVERY.md`
 - `docs/requirements/FEATURE_PARITY_MATRIX.md`
 - `docs/requirements/Infovish_ERP_PRD_v1.1.md`

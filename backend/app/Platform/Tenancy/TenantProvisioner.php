@@ -2,8 +2,8 @@
 
 namespace App\Platform\Tenancy;
 
+use App\Platform\ModuleRegistry\TenantSchema;
 use App\Shared\Audit\Audit;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -67,29 +67,14 @@ final class TenantProvisioner
             $connection['database'] = $database;
             config(['database.connections.tenant_migration' => $connection]);
             DB::purge('tenant_migration');
-            if (Artisan::call('migrate', ['--database' => 'tenant_migration', '--path' => 'database/tenant-migrations', '--force' => true]) !== 0) {
-                throw new RuntimeException('Tenant schema migration failed.');
-            }
-            $tenantDb = DB::connection('tenant_migration');
-            $identity = $tenantDb->table('tenant_identity')->value('id');
-            if ($identity !== null && $identity !== $id) {
-                throw new RuntimeException('Tenant database identity mismatch.');
-            }
-            if ($identity === null) {
-                $tenantDb->table('tenant_identity')->insert(['id' => $id]);
-            }
-            $tenantDb->statement('REVOKE ALL ON SCHEMA public FROM PUBLIC');
-            $tenantDb->statement('GRANT USAGE ON SCHEMA public TO "'.$role.'"');
-            $tenantDb->statement('GRANT SELECT ON tenant_identity, audit_events TO "'.$role.'"');
-            $tenantDb->statement('GRANT SELECT, INSERT, UPDATE, DELETE ON companies, branches, departments TO "'.$role.'"');
-            $tenantDb->statement('GRANT INSERT ON audit_events TO "'.$role.'"');
+            app(TenantSchema::class)->install('tenant_migration', $id, $role);
             $platform->transaction(function () use ($platform, $id, $host, $ownerId) {
                 $platform->table('tenant_domains')->insertOrIgnore(['host' => $host, 'tenant_id' => $id]);
                 if ($platform->table('tenant_domains')->where('host', $host)->value('tenant_id') !== $id) {
                     throw new RuntimeException('Hostname belongs to another tenant.');
                 }
                 $platform->table('memberships')->updateOrInsert(['tenant_id' => $id, 'user_id' => $ownerId], ['role' => 'owner', 'active' => true, 'company_ids' => '[]', 'branch_ids' => '[]', 'created_at' => now(), 'updated_at' => now()]);
-                $platform->table('tenants')->where('id', $id)->update(['status' => 'active', 'schema_version' => 1, 'updated_at' => now()]);
+                $platform->table('tenants')->where('id', $id)->update(['status' => 'active', 'schema_version' => TenantSchema::VERSION, 'updated_at' => now()]);
                 app(Audit::class)->platform('tenant.provisioned', null, $id, $id, connection: 'provisioner');
             });
 

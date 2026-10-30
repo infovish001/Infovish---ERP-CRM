@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory)][ValidateSet('Migrate','RuntimeRole','User','Tenant','Domain','State','Test')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Migrate','RuntimeRole','User','Tenant','Domain','State','Upgrade','Entitlement','Dispatch','Test')][string]$Action,
     [Parameter(ValueFromRemainingArguments)][string[]]$Arguments
 )
 $ErrorActionPreference = 'Stop'
@@ -24,6 +24,9 @@ try {
         'Tenant' { & php artisan platform:tenant @Arguments }
         'Domain' { & php artisan platform:tenant-domain @Arguments }
         'State' { & php artisan platform:tenant-state @Arguments }
+        'Upgrade' { & php artisan platform:tenant-upgrade @Arguments }
+        'Entitlement' { & php artisan platform:module-entitlement @Arguments }
+        'Dispatch' { & php artisan platform:outbox-dispatch @Arguments }
         'Test' {
             $env:DB_DATABASE = 'infovish_test'
             $env:PROVISIONING_DB_DATABASE = 'infovish_test'

@@ -176,6 +176,7 @@ export default function Workspace({
                 </div>
                 <p className="nav-label">ADMINISTRATION</p>
                 <nav className="workspace-nav">
+                    <Link href="/workspace/master-data">Contacts &amp; catalog</Link>
                     <button
                         className={tab === 'organization' ? 'nav-active' : ''}
                         onClick={() => setTab('organization')}

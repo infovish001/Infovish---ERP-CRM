@@ -111,7 +111,8 @@ input[type='checkbox'] {
     flex-direction: column;
     gap: 5px;
 }
-.workspace-nav button {
+.workspace-nav button,
+.workspace-nav a {
     border: 0;
     padding: 12px;
     text-align: left;
@@ -120,7 +121,8 @@ input[type='checkbox'] {
     border-radius: 7px;
     font-size: 13px;
 }
-.workspace-nav button.nav-active {
+.workspace-nav button.nav-active,
+.workspace-nav a.nav-active {
     color: white;
     background: #182a51;
     border-left: 3px solid #6392ff;
@@ -364,6 +366,201 @@ a {
     margin-left: 248px;
     flex: 1;
     min-width: 0;
+}
+.empty-state {
+    padding: 28px 24px;
+}
+.empty-state h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+}
+.empty-state .secondary-button {
+    margin-top: 16px;
+}
+.table-wrap {
+    overflow-x: auto;
+}
+.data-table {
+    min-width: 680px;
+}
+.data-table td small,
+.data-table td strong {
+    display: block;
+}
+.data-table td small {
+    color: var(--muted);
+    font-size: 11px;
+    margin: 4px 0;
+}
+.data-table td strong {
+    font-weight: 600;
+}
+.data-table td:last-child .text-button + .text-button {
+    margin-left: 14px;
+}
+.master-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+}
+.master-tabs button {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--muted);
+    background: transparent;
+}
+.master-tabs .selected {
+    background: #3269ed;
+    color: white;
+}
+.master-toolbar {
+    display: flex;
+    align-items: end;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+.master-toolbar form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    min-width: 220px;
+}
+.master-toolbar input {
+    width: 100%;
+}
+.master-toolbar label,
+.master-form label {
+    display: grid;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--ink);
+}
+.master-toolbar input,
+.master-toolbar select,
+.master-form input:not([type='checkbox']),
+.master-form select {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 12px;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    min-width: 0;
+}
+.master-editor {
+    margin-bottom: 24px;
+}
+.master-form {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+.master-form small {
+    color: var(--muted);
+    font-size: 11px;
+}
+.master-form .checkbox-row,
+.master-form .form-actions,
+.attribute-editor {
+    grid-column: 1 / -1;
+}
+.checkbox-row,
+.form-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.master-form .checkbox-label,
+.checkbox-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.attribute-editor {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+}
+.attribute-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.attribute-row input {
+    flex: 1;
+    width: 30%;
+}
+.variant-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0;
+}
+.module-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid var(--line);
+}
+.module-row > div {
+    flex: 1;
+}
+.module-row h3 {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+.module-row small {
+    display: block;
+    color: var(--muted);
+    margin-top: 8px;
+}
+.pagination {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 0;
+    font-size: 12px;
+}
+.success-message {
+    color: #16704c;
+    padding: 12px 0;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+@media (max-width: 640px) {
+    .master-form {
+        grid-template-columns: 1fr;
+    }
+    .module-row {
+        flex-wrap: wrap;
+    }
+    .module-row > div {
+        flex-basis: 100%;
+    }
+    .master-toolbar > label {
+        width: 100%;
+    }
+    .attribute-row {
+        flex-wrap: wrap;
+    }
 }
 .topbar {
     min-height: 72px;

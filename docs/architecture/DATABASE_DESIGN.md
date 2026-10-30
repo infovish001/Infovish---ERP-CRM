@@ -1,0 +1,13 @@
+# Database ownership baseline
+
+M03 extends the M02 database-per-tenant design. The platform owns identities, memberships, tenant routing/lifecycle/credentials, module entitlements and immutable platform audit events. Provisioning metadata and entitlement writes require the separately credentialed operator; runtime can read them but cannot create databases/roles. Tenant passwords are encrypted with the application key. Never expose them through an API or event.
+
+Each tenant owns an exact identity marker; organization companies/branches/departments; restricted module installation versions/activation; append-only audit; shared counters, idempotency, event outbox and receipt tables; Parties contacts; Catalog products and variants. Module migrations reside with their owner. The runtime may update only enabled/updated_at in module_installations; it cannot edit installed versions or DDL. Tenant roles cannot connect to platform/other tenant databases. M03 migration paths are additive and schema version is recorded only after all migrations/grants succeed.
+
+Company foreign keys scope all master data. Variants use a compound product/company foreign key to forbid cross-company parents. UUIDs identify resources; company-local CON/PRD counters produce display numbers, and unique company/SKU and company/email constraints prevent duplicates. Revision integers plus row locks reject stale edits. Counters and idempotency locks are transactional; rolled-back creates do not consume a number. Idempotency scopes hash actor/company/operation/key and store the normalized request hash plus resulting UUID, never the original contact fields.
+
+Prices are nullable NUMERIC(20,6), nonnegative, returned as strings; no floating-point computation, implicit conversion or accounting rounding is introduced. Organization base currency/timezone remain immutable. Future changes need explicit compatibility and business-rule design.
+
+Outbox records store event UUID, tenant/actor/company, module, type/version, aggregate UUID, correlation/occurrence, state, attempts/backoff and delivery timestamp/error code. They store no contact PII or prices. Receipts key event UUID for the current internal journal consumer. Business mutation, audit and outbox are one tenant transaction; event processing uses a savepoint so a database receipt failure can leave a durable retry while preserving original committed business state. Separate future consumers will need consumer/event compound uniqueness and their own transactional effect/inbox design.
+
+See ADR-019/020, M02/M03 setup and reports. No production capacity, retention, backup restore, fleet migration or financial schema readiness is claimed.

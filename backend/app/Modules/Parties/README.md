@@ -1,0 +1,5 @@
+# Parties
+
+Owns `parties_contacts`, company-scoped contact/customer/supplier master identities and its Infrastructure migrations. Public contracts: `Domain/Contracts/Contacts` and immutable `ContactData`, listed in module.json. A lookup requires an active entitled module, current tenant/membership/company scope and an active record; it never returns a private persistence model. Application mutations require privileged MFA, expected revisions and create idempotency. No CRM leads, portal identities, fuzzy merging or supplier procurement behavior is implemented.
+
+Contact creation atomically allocates a CON number, writes an audit and ID-only contact.created v1 outbox event; edits emit contact.updated v1. Shared services own counters/idempotency/outbox, never another module's private tables. Email uniqueness is per company after lowercase/trim normalization; empty email remains null. Deactivation preserves history. Verified in M03ModulesTest and public-contract fixtures; see docs/engineering/M03_REPORT.md.

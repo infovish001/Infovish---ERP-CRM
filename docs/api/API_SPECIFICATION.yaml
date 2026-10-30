@@ -1,35 +1,50 @@
 openapi: 3.1.0
 info:
-  title: Infovish platform and organization API
-  version: 0.2.0
+  title: Infovish platform and master data API
+  version: 0.3.0
   description: >-
-    M02 session-authenticated organization APIs run on an exact registered tenant host.
-    Sign in through Fortify, complete MFA when enrolled, and provide the host-bound
-    session cookie. Mutations require the page's CSRF token. Tenant headers and body
-    identifiers never select a tenant. Public token/OAuth integrations remain deferred.
+    M02 session-authenticated organization APIs run on an exact registered tenant host. Sign in through Fortify,
+    complete MFA when enrolled, and provide the host-bound session cookie. Mutations require the page's CSRF token.
+    Tenant headers and body identifiers never select a tenant. Public token/OAuth integrations remain deferred. M03
+    master data requires an active, entitled, installed module and an active authorized company. Privileged mutations
+    require confirmed MFA. Creates require Idempotency-Key; repeated identical requests return the same UUID,
+    conflicting reuse returns 409. Updates require the last observed revision. Master-data routes allow 120 requests per
+    minute per authenticated actor. List endpoints return 25 records per page. Decimal list prices are strings in
+    company base currency; no tax, discount or currency conversion is performed.
 paths:
   /login:
     post:
       operationId: login
-      parameters: [{ $ref: '#/components/parameters/Csrf' }]
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [email, password]
+              required:
+                - email
+                - password
               properties:
-                email: { type: string, format: email }
-                password: { type: string, format: password }
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
       responses:
-        '200': { description: Password accepted; two_factor flag indicates whether a challenge is required. }
-        '422': { description: Generic invalid credentials or input validation failure. }
-        '429': { description: Too many login attempts. }
+        '200':
+          description: Password accepted; two_factor flag indicates whether a challenge is required.
+        '422':
+          description: Generic invalid credentials or input validation failure.
+        '429':
+          description: Too many login attempts.
   /two-factor-challenge:
     post:
       operationId: completeMfa
-      parameters: [{ $ref: '#/components/parameters/Csrf' }]
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
       requestBody:
         required: true
         content:
@@ -37,17 +52,25 @@ paths:
             schema:
               type: object
               properties:
-                code: { type: string }
-                recovery_code: { type: string, format: password }
+                code:
+                  type: string
+                recovery_code:
+                  type: string
+                  format: password
       responses:
-        '204': { description: MFA accepted and authenticated session regenerated. }
-        '403': { description: 'Challenge tenant, identity state or session version did not match.' }
-        '422': { description: Invalid authentication or recovery code. }
-        '429': { description: Too many challenge attempts. }
+        '204':
+          description: MFA accepted and authenticated session regenerated.
+        '403':
+          description: Challenge tenant, identity state or session version did not match.
+        '422':
+          description: Invalid authentication or recovery code.
+        '429':
+          description: Too many challenge attempts.
   /api/v1/me:
     get:
       operationId: currentMembership
-      security: [{ session: [] }]
+      security:
+        - session: []
       responses:
         '200':
           description: Authenticated identity and current server-verified tenant role; no credentials or MFA secrets.
@@ -56,17 +79,32 @@ paths:
               schema:
                 type: object
                 properties:
-                  id: { type: string, format: uuid }
-                  name: { type: string }
-                  email: { type: string, format: email }
-                  tenant_id: { type: string, format: uuid }
-                  role: { enum: [owner, administrator, auditor, member] }
-        '401': { description: Login or fresh session required. }
-        '403': { description: Membership or privileged MFA requirement denied access. }
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  tenant_id:
+                    type: string
+                    format: uuid
+                  role:
+                    enum:
+                      - owner
+                      - administrator
+                      - auditor
+                      - member
+        '401':
+          description: Login or fresh session required.
+        '403':
+          description: Membership or privileged MFA requirement denied access.
   /api/v1/organization:
     get:
       operationId: organization
-      security: [{ session: [] }]
+      security:
+        - session: []
       responses:
         '200':
           description: Companies, branches and departments filtered by current membership grants.
@@ -75,60 +113,113 @@ paths:
               schema:
                 type: object
                 properties:
-                  companies: { type: array, items: { type: object } }
-                  branches: { type: array, items: { type: object } }
-                  departments: { type: array, items: { type: object } }
-        '401': { description: Login or fresh session required. }
-        '403': { description: Workspace access denied. }
+                  companies:
+                    type: array
+                    items:
+                      type: object
+                  branches:
+                    type: array
+                    items:
+                      type: object
+                  departments:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          description: Login or fresh session required.
+        '403':
+          description: Workspace access denied.
   /api/v1/organization/{kind}:
     post:
       operationId: createOrganizationRecord
-      security: [{ session: [] }]
-      parameters: [{ $ref: '#/components/parameters/Kind' }, { $ref: '#/components/parameters/Csrf' }]
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Kind'
+        - $ref: '#/components/parameters/Csrf'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [code, name]
+              required:
+                - code
+                - name
               properties:
-                code: { type: string, pattern: '^[A-Z][A-Z0-9_-]{0,19}$' }
-                name: { type: string, maxLength: 120 }
-                base_currency: { type: string, pattern: '^[A-Z]{3}$', description: Required for a company; no conversion or accounting policy is implied. }
-                timezone: { type: string, description: Required IANA identifier for a company. }
-                company_id: { type: string, format: uuid, description: Required for a branch or department in this tenant. }
-                branch_id: { type: [string, 'null'], format: uuid, description: Optional department branch within the same company. }
-                active: { type: boolean }
+                code:
+                  type: string
+                  pattern: ^[A-Z][A-Z0-9_-]{0,19}$
+                name:
+                  type: string
+                  maxLength: 120
+                base_currency:
+                  type: string
+                  pattern: ^[A-Z]{3}$
+                  description: Required for a company; no conversion or accounting policy is implied.
+                timezone:
+                  type: string
+                  description: Required IANA identifier for a company.
+                company_id:
+                  type: string
+                  format: uuid
+                  description: Required for a branch or department in this tenant.
+                branch_id:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                  description: Optional department branch within the same company.
+                active:
+                  type: boolean
       responses:
-        '201': { description: Created atomically with an audit event; response contains its UUID. }
-        '401': { description: Login required. }
-        '403': { description: 'Role, scope, lifecycle or privileged MFA denied the operation.' }
-        '422': { description: Invalid fields or duplicate code. }
+        '201':
+          description: Created atomically with an audit event; response contains its UUID.
+        '401':
+          description: Login required.
+        '403':
+          description: Role, scope, lifecycle or privileged MFA denied the operation.
+        '422':
+          description: Invalid fields or duplicate code.
   /api/v1/organization/{kind}/{id}:
     put:
       operationId: updateOrganizationRecord
-      security: [{ session: [] }]
+      security:
+        - session: []
       parameters:
-        - { $ref: '#/components/parameters/Kind' }
-        - { $ref: '#/components/parameters/Csrf' }
-        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/Kind'
+        - $ref: '#/components/parameters/Csrf'
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [name]
+              required:
+                - name
               properties:
-                name: { type: string, maxLength: 120 }
-                active: { type: boolean }
+                name:
+                  type: string
+                  maxLength: 120
+                active:
+                  type: boolean
       responses:
-        '200': { description: Name/status updated atomically with an audit event; immutable fields are not modified. }
-        '401': { description: Login required. }
-        '403': { description: Role or privileged MFA denied the operation. }
-        '404': { description: Record does not exist in the resolved tenant database. }
-        '422': { description: Validation failure. }
+        '200':
+          description: Name/status updated atomically with an audit event; immutable fields are not modified.
+        '401':
+          description: Login required.
+        '403':
+          description: Role or privileged MFA denied the operation.
+        '404':
+          description: Record does not exist in the resolved tenant database.
+        '422':
+          description: Validation failure.
   /health:
     get:
       operationId: health
@@ -139,9 +230,11 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [status]
+                required:
+                  - status
                 properties:
-                  status: { const: ok }
+                  status:
+                    const: ok
   /ready:
     get:
       operationId: readiness
@@ -150,12 +243,570 @@ paths:
           description: Both platform dependencies are reachable; does not verify worker or migration state.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Readiness' }
+              schema:
+                $ref: '#/components/schemas/Readiness'
         '503':
           description: At least one dependency is unavailable; connection details are omitted.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Readiness' }
+              schema:
+                $ref: '#/components/schemas/Readiness'
+  /api/v1/contacts:
+    get:
+      operationId: listContacts
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+        - name: status
+          in: query
+          schema:
+            enum:
+              - all
+              - active
+              - inactive
+            default: all
+      responses:
+        '200':
+          description: Company-scoped searchable paginated records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Contact'
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+    post:
+      operationId: createContact
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Created or updated record UUID. A create retry returns the same status and UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactInput'
+  /api/v1/contacts/{id}:
+    put:
+      operationId: updateContact
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Created or updated record UUID. A create retry returns the same status and UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ContactInput'
+                - required:
+                    - revision
+  /api/v1/products:
+    get:
+      operationId: listProducts
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Company'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+        - name: status
+          in: query
+          schema:
+            enum:
+              - all
+              - active
+              - inactive
+            default: all
+      responses:
+        '200':
+          description: Company-scoped searchable paginated records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+    post:
+      operationId: createProduct
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Created or updated record UUID. A create retry returns the same status and UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+  /api/v1/products/{id}:
+    put:
+      operationId: updateProduct
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Created or updated record UUID. A create retry returns the same status and UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_id
+                - name
+                - active
+                - revision
+              properties:
+                company_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                  maxLength: 160
+                active:
+                  type: boolean
+                revision:
+                  type: integer
+                  minimum: 1
+  /api/v1/products/{product}/variants:
+    post:
+      operationId: createVariant
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+      responses:
+        '201':
+          description: Created or updated record UUID. A create retry returns the same status and UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantInput'
+  /api/v1/products/{product}/variants/{id}:
+    put:
+      operationId: updateVariant
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Created or updated record UUID. A create retry returns the same status and UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/VariantInput'
+                - required:
+                    - revision
+  /api/v1/modules:
+    get:
+      operationId: listModuleDiagnostics
+      security:
+        - session: []
+      parameters: []
+      responses:
+        '200':
+          description: Current bundled module entitlement, installation and activation states.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Module'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+  /api/v1/modules/{module}:
+    put:
+      operationId: setModuleActivation
+      security:
+        - session: []
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            enum:
+              - Parties
+              - Catalog
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Refreshed module diagnostics.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Module'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - enabled
+              properties:
+                enabled:
+                  type: boolean
+  /api/v1/events:
+    get:
+      operationId: listDeliveryDiagnostics
+      security:
+        - session: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+      responses:
+        '200':
+          description: Privileged tenant-only internal journal delivery metadata; no contact PII or price payloads.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  current_page:
+                    type: integer
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
+  /api/v1/events/{id}/replay:
+    post:
+      operationId: replayDeadLetter
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: Dead-letter event returned to pending; an operator dispatcher must enqueue it.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    const: pending
+        '401':
+          description: Fresh tenant-bound login required.
+        '403':
+          description: Module entitlement/activation, MFA, role or company access denied.
+        '404':
+          description: Record not found in the authorized scope.
+        '409':
+          description: Revision, idempotency, dependency or schema conflict.
+        '419':
+          description: Missing or invalid CSRF token.
+        '422':
+          description: Validation failure; message and field errors returned.
+        '429':
+          description: Request rate limit exceeded.
 components:
   securitySchemes:
     session:
@@ -168,21 +819,312 @@ components:
       name: kind
       in: path
       required: true
-      schema: { enum: [company, branch, department] }
+      schema:
+        enum:
+          - company
+          - branch
+          - department
     Csrf:
       name: X-CSRF-TOKEN
       in: header
       required: true
-      schema: { type: string }
+      schema:
+        type: string
+    Company:
+      name: company_id
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Must be active and authorized in the host-resolved tenant.
+    RecordId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProductId:
+      name: product
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Idempotency:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{16,100}$
+      description: Keep the same key for retries of the same actor/company/create operation. Use a new key for a different request.
   schemas:
     Readiness:
       type: object
-      required: [status, checks]
+      required:
+        - status
+        - checks
       properties:
-        status: { enum: [ready, unavailable] }
+        status:
+          enum:
+            - ready
+            - unavailable
         checks:
           type: object
-          required: [database, redis]
+          required:
+            - database
+            - redis
           properties:
-            database: { enum: [ready, unavailable] }
-            redis: { enum: [ready, unavailable] }
+            database:
+              enum:
+                - ready
+                - unavailable
+            redis:
+              enum:
+                - ready
+                - unavailable
+    ContactInput:
+      type: object
+      required:
+        - company_id
+        - name
+        - customer
+        - supplier
+        - active
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        email:
+          type:
+            - string
+            - 'null'
+          format: email
+          maxLength: 254
+        phone:
+          type:
+            - string
+            - 'null'
+          maxLength: 40
+        customer:
+          type: boolean
+        supplier:
+          type: boolean
+    Contact:
+      allOf:
+        - $ref: '#/components/schemas/ContactInput'
+        - type: object
+          required:
+            - id
+            - number
+            - revision
+          properties:
+            id:
+              type: string
+              format: uuid
+            number:
+              type: string
+              maxLength: 30
+    Price:
+      type:
+        - string
+        - 'null'
+      pattern: ^(0|[1-9][0-9]{0,13})(\.[0-9]{1,6})?$
+      description: Nonnegative NUMERIC(20,6), returned as a six-place decimal string; null means no list price.
+    ProductInput:
+      type: object
+      required:
+        - company_id
+        - name
+        - active
+        - type
+        - unit
+        - sku
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        type:
+          enum:
+            - product
+            - service
+        unit:
+          type: string
+          maxLength: 30
+        sku:
+          type: string
+          pattern: ^[A-Z0-9][A-Z0-9_.-]{0,49}$
+        list_price:
+          $ref: '#/components/schemas/Price'
+    VariantInput:
+      type: object
+      required:
+        - company_id
+        - name
+        - active
+        - attributes
+        - sku
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        sku:
+          type: string
+          pattern: ^[A-Z0-9][A-Z0-9_.-]{0,49}$
+        list_price:
+          $ref: '#/components/schemas/Price'
+        attributes:
+          type: object
+          maxProperties: 10
+          propertyNames:
+            pattern: ^[A-Za-z][A-Za-z0-9 _-]{0,39}$
+          additionalProperties:
+            type: string
+            minLength: 1
+            maxLength: 100
+    Variant:
+      allOf:
+        - $ref: '#/components/schemas/VariantInput'
+        - type: object
+          required:
+            - id
+            - revision
+            - currency
+          properties:
+            id:
+              type: string
+              format: uuid
+            product_id:
+              type: string
+              format: uuid
+            currency:
+              type: string
+              pattern: ^[A-Z]{3}$
+    Product:
+      type: object
+      required:
+        - id
+        - company_id
+        - number
+        - name
+        - type
+        - unit
+        - active
+        - revision
+        - variants
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 160
+        active:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+          maxLength: 30
+        type:
+          enum:
+            - product
+            - service
+        unit:
+          type: string
+          maxLength: 30
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+    Module:
+      type: object
+      properties:
+        name:
+          enum:
+            - Parties
+            - Catalog
+        version:
+          type: string
+          maxLength: 20
+        installed_version:
+          type:
+            - string
+            - 'null'
+        enabled:
+          type: boolean
+        entitled:
+          type: boolean
+        available:
+          type: boolean
+        dependencies:
+          type: array
+          items:
+            type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+          maxLength: 80
+        event_version:
+          const: 1
+        aggregate_id:
+          type: string
+          format: uuid
+        company_id:
+          type: string
+          format: uuid
+        state:
+          enum:
+            - pending
+            - queued
+            - delivered
+            - dead
+        attempts:
+          type: integer
+        error_code:
+          type:
+            - string
+            - 'null'
+        occurred_at:
+          type: string
+          format: date-time
+        delivered_at:
+          type:
+            - string
+            - 'null'
+          format: date-time

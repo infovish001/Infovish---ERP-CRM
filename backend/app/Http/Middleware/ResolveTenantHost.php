@@ -23,6 +23,11 @@ final class ResolveTenantHost
         $request->attributes->set('tenant', $tenant);
         $previous = ['session.cookie' => config('session.cookie'), 'session.domain' => config('session.domain')];
         config(['session.cookie' => 'infovish_'.substr(hash('sha256', $host), 0, 16), 'session.domain' => null]);
+        // Fortify can resolve its guard/session while Laravel gathers controller middleware,
+        // before this middleware runs. Keep that already-created store on the host cookie too.
+        $session = app('session')->driver();
+        $previousName = $session->getName();
+        $session->setName(config('session.cookie'));
         if ($request->is('login') && $request->isMethod('post')) {
             $request->merge(['remember' => false]);
         }
@@ -35,6 +40,7 @@ final class ResolveTenantHost
 
             return $response;
         } finally {
+            $session->setName($previousName);
             config($previous);
         }
     }

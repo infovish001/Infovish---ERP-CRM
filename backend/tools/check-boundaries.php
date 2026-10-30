@@ -13,7 +13,8 @@ foreach ($modules as $module) {
 
         continue;
     }
-    foreach ($manifest['dependencies'] as $dependency) {
+    $dependencies = array_is_list($manifest['dependencies']) ? $manifest['dependencies'] : array_keys($manifest['dependencies']);
+    foreach ($dependencies as $dependency) {
         if ($dependency === $owner || ! in_array($dependency, $names, true)) {
             $errors[] = "$owner: invalid dependency $dependency";
         }
@@ -28,7 +29,9 @@ foreach ($modules as $module) {
             if ($match[1] === $owner) {
                 continue;
             }
-            if (! in_array($match[1], $manifest['dependencies'], true) || ! str_starts_with($match[2], 'Domain\\Contracts\\')) {
+            $target = json_decode(file_get_contents($root.'/'.$match[1].'/module.json') ?: '{}', true);
+            $publicName = substr($match[2], strlen('Domain\\Contracts\\'));
+            if (! in_array($match[1], $dependencies, true) || ! str_starts_with($match[2], 'Domain\\Contracts\\') || (isset($target['contracts']) && ! in_array($publicName, $target['contracts'], true))) {
                 $errors[] = "$owner: forbidden import {$match[0]}";
             }
         }

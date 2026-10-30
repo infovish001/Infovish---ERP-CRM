@@ -1,0 +1,11 @@
+{
+    "name": "Catalog",
+    "version": "1.0.0",
+    "framework_major": 1,
+    "dependencies": {},
+    "contracts": [
+        "Products",
+        "ProductData"
+    ],
+    "migrations": "Infrastructure/Migrations"
+}

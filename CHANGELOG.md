@@ -2,8 +2,12 @@
 
 ## Unreleased — 2026-10-30
 
+- Added M03 bundled module manifests/lifecycle/entitlements, additive tenant upgrades, company-scoped contacts and catalog variants/prices, immutable public DTO contracts, transactional numbering/idempotency and Redis outbox journal delivery.
+- Added revision conflicts, master-data UI/API workflows, dependency/concurrency/upgrade/failure tests and operator runbooks.
+- Corrected host-cookie initialization when Fortify resolves its session before tenant routing.
+
 - Added M02 database-per-tenant provisioning, trusted domain routing, restricted runtime roles, identity/TOTP/session protection, organization and membership management, scoped audit history and versioned organization APIs.
-- Added live multi-tenant PostgreSQL/Redis acceptance tests, CSRF/authorization/MFA regressions and operator setup documentation. M03 remains gated.
+- Added live multi-tenant PostgreSQL/Redis acceptance tests, CSRF/authorization/MFA regressions and operator setup documentation for M02.
 
 - Preserved PRD v1.1 and SAD v1.0 as searchable repository transcriptions.
 - Recorded M00 architecture review, module ownership, technology sources and ADR register.

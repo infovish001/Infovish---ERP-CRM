@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\WorkspaceController;
 use App\Shared\Health\Readiness;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/security', [WorkspaceController::class, 'security']);
     Route::put('/account/password', [WorkspaceController::class, 'password']);
     Route::middleware('privileged-mfa')->group(function () {
+        Route::get('/workspace/master-data', [MasterDataController::class, 'page']);
+        Route::prefix('api/v1')->middleware('throttle:120,1')->controller(MasterDataController::class)->group(function () {
+            Route::get('modules', 'modules');
+            Route::put('modules/{module}', 'toggle')->whereIn('module', ['Parties', 'Catalog']);
+            Route::get('contacts', 'contacts');
+            Route::post('contacts', 'saveContact');
+            Route::put('contacts/{id}', 'saveContact')->whereUuid('id');
+            Route::get('products', 'products');
+            Route::post('products', 'saveProduct');
+            Route::put('products/{id}', 'saveProduct')->whereUuid('id');
+            Route::post('products/{product}/variants', 'saveVariant')->whereUuid('product');
+            Route::put('products/{product}/variants/{id}', 'saveVariant')->whereUuid('product')->whereUuid('id');
+            Route::get('events', 'events');
+            Route::post('events/{id}/replay', 'replay')->whereUuid('id');
+        });
         Route::get('/api/v1/me', [WorkspaceController::class, 'me']);
         Route::get('/api/v1/organization', [WorkspaceController::class, 'organizationJson']);
         Route::post('/api/v1/organization/{kind}', [WorkspaceController::class, 'saveOrganization'])->whereIn('kind', ['company', 'branch', 'department']);

@@ -32,7 +32,9 @@ final class Audit
         $allowed = ['identity.created', 'identity.login', 'identity.logout', 'identity.failed', 'identity.password_changed', 'identity.revoked',
             'identity.mfa_setup_started', 'identity.mfa_confirmed', 'identity.mfa_disabled', 'identity.recovery_codes_generated', 'identity.recovery_code_used',
             'tenant.provisioned', 'tenant.provision_failed', 'tenant.suspended', 'tenant.resumed', 'tenant.domain_registered', 'membership.updated',
-            'company.created', 'company.updated', 'branch.created', 'branch.updated', 'department.created', 'department.updated'];
+            'company.created', 'company.updated', 'branch.created', 'branch.updated', 'department.created', 'department.updated',
+            'tenant.schema_upgraded', 'module.entitlement_changed', 'module.enabled', 'module.disabled', 'contact.created', 'contact.updated',
+            'product.created', 'product.updated', 'variant.created', 'variant.updated', 'event.replayed'];
         if (! in_array($action, $allowed, true) || array_diff(array_keys($metadata), ['role', 'active', 'company_id', 'branch_id', 'changed_fields'])) {
             throw new InvalidArgumentException('Unsupported audit event metadata.');
         }

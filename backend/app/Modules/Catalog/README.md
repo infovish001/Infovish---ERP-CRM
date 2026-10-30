@@ -1,0 +1,5 @@
+# Catalog
+
+Owns `catalog_products` and `catalog_variants`, their migrations and product/service master rules. Public contracts: `Domain/Contracts/Products` and immutable `ProductData`, listed in module.json. `find(companyId, variantId)` returns an authorized active variant of an active product, with decimal-string price/currency and stable identifiers. No private model escapes the module. No stock, sales order, tax, discount or currency conversion logic is implemented.
+
+Products receive a PRD number and initial variant. Additional variants carry up to ten string attributes and an optional base-currency NUMERIC(20,6) list price; blank means no price. SKUs are unique per company and immutable. Product type/unit/company and reference numbers are immutable. Mutations require privileged MFA, active company/module/entitlement, expected revisions and create idempotency; data, audit and ID-only product/variant v1 outbox events commit together. Deactivation preserves history. Verified in M03ModulesTest and React interaction tests; see docs/engineering/M03_REPORT.md.

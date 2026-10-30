@@ -34,6 +34,7 @@ final class RuntimeRole
             $admin->statement('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "'.$username.'"');
             $admin->statement('REVOKE UPDATE, DELETE ON platform_audit_events FROM "'.$username.'"');
             $admin->statement('REVOKE INSERT, UPDATE, DELETE ON tenants, tenant_domains FROM "'.$username.'"');
+            $admin->statement('REVOKE INSERT, UPDATE, DELETE ON tenant_module_entitlements FROM "'.$username.'"');
         } catch (\Throwable) {
             throw new RuntimeException('Runtime role configuration failed; no credentials were emitted.');
         }
