@@ -6,7 +6,7 @@
 | M01 | Engineering foundation described below | Authorized if M00 passes |
 | M02 | Tenant provisioning, identity, organization, audit | Authorized by user continuation after M01; evidence in M02_REPORT.md |
 | M03 | Module framework, shared services, catalog and contacts | Authorized after M02; verified in M03_REPORT; stop before M04 |
-| M04 | CRM | Authorized after M03; scope/evidence in M04_SPEC and M04_REPORT; stop before M05 |
+| M04 | CRM | Authorized after M03; verified in M04_REPORT; stop before M05 |
 | M05 | Sales and first commercial release | Future |
 | M06 | Finance and accounting | Future |
 | M07 | Inventory and procurement | Future |

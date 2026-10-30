@@ -1,6 +1,6 @@
 # Infovish ERP and CRM
 
-Infovish Systems' incremental modular ERP platform. M00 through M03 are verified. M02 adds tenant provisioning, identity, organization and audit. M03 adds bundled modules, contacts/catalog and transactional shared services; verification evidence is recorded in each milestone report. M04 adds the assigned-record CRM baseline; sales, finance and production readiness remain future milestones.
+Infovish Systems' incremental modular ERP platform. M00 through M04 are verified. M02 adds tenant provisioning, identity, organization and audit. M03 adds bundled modules, contacts/catalog and transactional shared services; verification evidence is recorded in each milestone report. M04 adds the assigned-record CRM baseline; sales, finance and production readiness remain future milestones.
 
 Read [M00 report](docs/engineering/M00_REPORT.md), [architecture validation](docs/architecture/ARCHITECTURE_VALIDATION.md), [technology decisions](docs/architecture/TECHNOLOGY_DECISIONS.md) and [milestones](docs/engineering/MILESTONES.md). Original Word references remain in `References/`; complete paragraph/table-text transcriptions are in `docs/requirements/`. Embedded diagrams remain in the originals.
 

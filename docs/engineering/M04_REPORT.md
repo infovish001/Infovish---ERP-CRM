@@ -1,6 +1,8 @@
 # M04 CRM implementation and verification
 
-Status: IN PROGRESS pending hosted CI acceptance. Authorized by the user's continuation after M03 handoff on 2026-10-30. M05 remains unauthorized.
+Status: PASS - implemented CRM baseline verified locally and in hosted CI. Authorized by the user's continuation after M03 handoff on 2026-10-30. M05 remains unauthorized.
+
+Implementation: `2f7bef89ebba07c6ab0f545d01305b7433e6d8a7`; formatting correction: `4cc8c0b28900d9f8e99c35bde42fd962e87bb698`. [Hosted acceptance run](https://github.com/infovish001/Infovish---ERP-CRM/actions/runs/41069808405) passed all backend/frontend/static/API/dependency checks and the repository-history secret scan.
 
 ## Delivered scope
 
@@ -28,9 +30,9 @@ The Figma CRM frame was inspected: navy navigation, compact header, pale workspa
 | Real authenticated browser and local schema upgrade | PASS: disposable tenant lifecycle, conversion, activities, exact forecasts, mobile navigation and 12 worker-delivered events; actual Infovish tenant upgraded to schema 3 with preserved records |
 | Dependency audits | PASS: Composer validation/audit and npm audit, no reported advisories |
 | Local secret scan | PASS: Gitleaks 8.30.1, all 222 Git-includable files, no leaks |
-| Hosted CI / history secret scan | Initial history scan passed; rerun pending after formatting correction |
+| Hosted CI / history secret scan | PASS: linked corrected run, including full backend/frontend/static/API/dependency checks and repository-history Gitleaks |
 
-The first hosted run stopped at Pint: two CRM files retained spacing differences masked by the local formatting cache. Fresh-cache formatting corrected only whitespace, and an independent fresh-cache check passed. The full container suite above passed before that whitespace-only correction. Final readiness and registered owner sign-in both returned HTTP 200.
+The first hosted run stopped at Pint: two CRM files retained spacing differences masked by the local formatting cache. Fresh-cache formatting corrected only whitespace, and an independent fresh-cache check passed. The full container suite above passed before that whitespace-only correction. The final images were then rebuilt and restarted healthy with the corrected source; hosted CI verified the corrected source in full. Final readiness and registered owner sign-in both returned HTTP 200.
 
 Expanded tests cover assigned-member/auditor/company/tenant boundaries, duplicate IDs, inactive entitlement/module/MFA, CSRF, stale revisions, company-grant revocation while waiting for the mutation lock, explicit customer reuse/collision, conversion retry/concurrency, rollback after customer creation, exact large/small forecasts/rounding/unknowns, lost/won/reopen behavior, immutable history, activity parent/time/terminal state, schema-2 upgrade preservation and ID-only CRM member events through real Redis. Tests use dedicated infovish_test and uniquely named tenant databases/roles, with restricted runtime access and separate operator credentials. Earlier M02/M03 regression remains mandatory.
 
